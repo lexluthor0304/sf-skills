@@ -6,7 +6,7 @@ description: >
   Runtime API, run single-utterance tests via sf CLI, analyze topic/action/context coverage,
   and automatically fix failing agents with 100-point scoring across 7 categories.
 license: MIT
-compatibility: "Requires API v65.0+ (Winter '26) and Agentforce enabled org"
+compatibility: "Requires API v66.0+ (Spring '26) and Agentforce enabled org"
 metadata:
   version: "2.1.0"
   author: "Jag Valaiyapathy"

@@ -27,7 +27,7 @@ Standard Agentforce platform skill for Setup UI-based agent building, PromptTemp
 
 | Requirement | Value |
 |-------------|-------|
-| API Version | **65.0+** (Winter '26 or later) |
+| API Version | **66.0+** (Spring '26 or later) |
 | Licenses | Agentforce, Einstein Generative AI |
 | sf CLI | v2.x with agent commands |
 

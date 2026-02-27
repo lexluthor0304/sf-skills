@@ -38,7 +38,7 @@ This skill synthesizes conversation design best practices from the following sou
 
 ## Salesforce Platform References
 
-- Agentforce Documentation (API v65.0+)
+- Agentforce Documentation (API v66.0+)
 - Einstein Trust Layer Documentation
 - Omni-Channel Routing Configuration Guide
 - Agent Builder Setup Guide

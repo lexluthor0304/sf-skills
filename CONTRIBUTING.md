@@ -146,7 +146,7 @@ feat(sf-flow): Add Platform Event flow template
 
 - Added new template for platform event-triggered flows
 - Updated documentation with usage examples
-- Validated with API 62.0
+- Validated with API 66.0
 
 Closes #123
 ```

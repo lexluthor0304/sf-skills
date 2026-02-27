@@ -465,7 +465,7 @@ async function refreshWithRotation(refreshToken) {
 
 ```apex
 HttpRequest req = new HttpRequest();
-req.setEndpoint('callout:SalesforceAPI/services/data/v62.0/query?q=SELECT+Id+FROM+Account');
+req.setEndpoint('callout:SalesforceAPI/services/data/v66.0/query?q=SELECT+Id+FROM+Account');
 req.setMethod('GET');
 
 Http http = new Http();
@@ -527,7 +527,7 @@ curl -X POST https://login.salesforce.com/services/oauth2/revoke \
 ```javascript
 async function callSalesforceAPI(accessToken, retries = 1) {
   try {
-    return await axios.get('https://instance.salesforce.com/services/data/v62.0/query', {
+    return await axios.get('https://instance.salesforce.com/services/data/v66.0/query', {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
   } catch (error) {

@@ -278,7 +278,7 @@ Channel: /event/Order_Update_Event__e
 Use REST API:
 
 ```http
-POST /services/data/v62.0/sobjects/Order_Update_Event__e
+POST /services/data/v66.0/sobjects/Order_Update_Event__e
 Content-Type: application/json
 
 {

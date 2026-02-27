@@ -30,7 +30,7 @@
         └── output/
             └── schema.json                           (output parameters)
 
-    IMPORTANT (API v65.0):
+    IMPORTANT (API v66.0):
     - Only these XML elements are valid: description, invocationTarget,
       invocationTargetType, isConfirmationRequired, masterLabel
     - Do NOT use: <capability>, <genAiFunctionParameters>,

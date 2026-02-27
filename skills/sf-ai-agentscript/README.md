@@ -16,7 +16,7 @@
 
 | Requirement | Value |
 |-------------|-------|
-| API Version | 65.0+ |
+| API Version | 66.0+ |
 | License | Agentforce |
 | Einstein Agent User | Required in org |
 | SF CLI | v2+ with agent commands |

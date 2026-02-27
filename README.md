@@ -324,7 +324,7 @@ Hooks provide **advisory feedback** — they inform but don't block operations.
 |--------|-------------|-------|
 | Most skills | **62.0** (Winter '25) | sf-apex, sf-flow, sf-lwc, sf-metadata |
 | sf-connected-apps, sf-integration | **61.0** | External Client Apps |
-| sf-ai-agentforce | **65.0** (Winter '26) | Full agent deployment, GenAiPlannerBundle |
+| sf-ai-agentforce | **66.0** (Spring '26) | Full agent deployment, GenAiPlannerBundle |
 
 **Optional** (enables additional features):
 

@@ -198,4 +198,4 @@ python3 ~/.claude/plugins/marketplaces/sf-skills/sf-metadata/hooks/scripts/valid
 ## Dependencies
 
 **Docs**: `references/` folder — metadata-types-reference, field-types-guide, fls-best-practices, naming-conventions
-**Required**: sf-deploy (optional) for deployment | API 65.0 | Block if score < 72
+**Required**: sf-deploy (optional) for deployment | API 66.0 | Block if score < 72

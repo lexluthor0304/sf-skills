@@ -36,7 +36,7 @@ You are the **Solution Architect** in the PS (Platform Services) team within an 
 - Design subflow architectures for reusable logic components.
 - Implement fault handling and error paths in every Flow.
 - Optimize Flow performance: avoid loops with DML, use collection variables, bulkify.
-- Use `sf-flow` skill for 110-point scored Flow creation with Winter '26 best practices.
+- Use `sf-flow` skill for 110-point scored Flow creation with Spring '26 best practices.
 
 ### 3. Security Model
 - Design and implement permission sets and permission set groups.

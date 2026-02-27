@@ -380,7 +380,7 @@ sf data create record \
   --target-org my-sandbox
 
 # Set default debug level
-sf config set org-api-version=62.0
+sf config set org-api-version=66.0
 ```
 
 ### Query Plan Analysis

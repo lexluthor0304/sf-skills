@@ -1,6 +1,6 @@
 # sf-flow
 
-Creates and validates Salesforce Flows with 110-point scoring and Winter '26 best practices. Build production-ready, performant, and secure flows.
+Creates and validates Salesforce Flows with 110-point scoring and Spring '26 best practices. Build production-ready, performant, and secure flows.
 
 ## Features
 
@@ -110,7 +110,7 @@ Always deploy custom objects/fields BEFORE flows that reference them.
 
 - sf CLI v2
 - Target Salesforce org
-- API Version 65.0+ (Winter '26)
+- API Version 66.0+ (Spring '26)
 
 ## License
 

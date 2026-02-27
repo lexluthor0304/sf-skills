@@ -26,7 +26,7 @@ Usage:
         Path("./sessions.parquet")
     )
 
-    # Async query pattern (v65.0+)
+    # Async query pattern (v66.0+)
     result = client.query("SELECT * FROM ssot__AIAgentSession__dlm")
     status = client.get_query_status(query_id)
     rows = client.get_query_rows(query_id, offset=0, row_limit=1000)
@@ -91,7 +91,7 @@ class Data360Client:
 
     Attributes:
         auth: Data360Auth instance for authentication
-        api_version: Salesforce API version (default: v65.0)
+        api_version: Salesforce API version (default: v66.0)
         batch_size: Records per API request (default: 2000)
         timeout: Request timeout in seconds (default: 120)
 
@@ -103,7 +103,7 @@ class Data360Client:
     """
 
     auth: DataCloudAuth
-    api_version: str = "v65.0"
+    api_version: str = "v66.0"
     batch_size: int = DEFAULT_BATCH_SIZE
     timeout: float = DEFAULT_TIMEOUT
     _stats: QueryStats = field(default_factory=QueryStats)
@@ -229,7 +229,7 @@ class Data360Client:
         self._stats = QueryStats(start_time=datetime.now())
         records_yielded = 0
 
-        # v65.0 Query SQL API - just send the SQL, no pageSize
+        # v66.0 Query SQL API - just send the SQL, no pageSize
         request_body = {"sql": sql}
 
         response = self._execute_request(self.query_url, "POST", request_body)
@@ -239,7 +239,7 @@ class Data360Client:
         column_names = [col["name"] for col in metadata]
 
         while True:
-            # v65.0 returns data as array of arrays, not array of dicts
+            # v66.0 returns data as array of arrays, not array of dicts
             raw_data = response.get("data", [])
             self._stats.batches_fetched += 1
 
@@ -445,7 +445,7 @@ class Data360Client:
             task = progress.add_task("Fetching...", total=None, records=0)
 
         try:
-            # v65.0 Query SQL API - just send the SQL, no pageSize
+            # v66.0 Query SQL API - just send the SQL, no pageSize
             request_body = {"sql": sql}
 
             response = self._execute_request(self.query_url, "POST", request_body)
@@ -455,7 +455,7 @@ class Data360Client:
             column_names = [col["name"] for col in metadata]
 
             while True:
-                # v65.0 returns data as array of arrays
+                # v66.0 returns data as array of arrays
                 raw_data = response.get("data", [])
                 self._stats.batches_fetched += 1
 
@@ -476,7 +476,7 @@ class Data360Client:
                     if progress and task is not None:
                         progress.update(task, records=records_written)
 
-                # Check for more pages via status (v65.0)
+                # Check for more pages via status (v66.0)
                 status = response.get("status", {})
                 completion_status = status.get("completionStatus", "")
 

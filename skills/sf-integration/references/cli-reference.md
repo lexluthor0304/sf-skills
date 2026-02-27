@@ -39,10 +39,10 @@ sf project deploy start --metadata CustomObject:{{EventName}}__e --target-org {{
 
 ```bash
 # REST API request
-sf api request rest /services/data/v62.0/sobjects/Account/describe --target-org {{alias}}
+sf api request rest /services/data/v66.0/sobjects/Account/describe --target-org {{alias}}
 
 # REST with POST body
-sf api request rest /services/data/v62.0/sobjects/Account --method POST \
+sf api request rest /services/data/v66.0/sobjects/Account --method POST \
   --body '{"Name":"Test Account"}' --target-org {{alias}}
 
 # GraphQL query

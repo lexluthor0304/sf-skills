@@ -258,4 +258,4 @@ Note: Client Credentials requires post-deployment Permission Set assignment
 ---
 
 *Last Updated: December 2025*
-*Based on testing with SF CLI and API v65.0*
+*Based on testing with SF CLI and API v66.0*

@@ -226,7 +226,7 @@ force-app/main/default/
 ```xml
 <!-- Meta file -->
 <ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>65.0</apiVersion>
+    <apiVersion>66.0</apiVersion>
     <status>Active</status>
 </ApexClass>
 ```

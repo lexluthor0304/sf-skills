@@ -301,7 +301,7 @@ Error: Object ssot__AIAgentSession__dlm not found
 **Causes:**
 
 1. **Session tracing not enabled** - Enable in Agentforce settings
-2. **Wrong API version** - Use v65.0 or higher
+2. **Wrong API version** - Use v66.0 or higher
 3. **Permission issue** - User needs Data 360 access
 
 ### Query Syntax Error
@@ -325,17 +325,17 @@ Error: Unexpected token at position X
 
 Critical discoveries from live testing against a sandbox org.
 
-### API Version: v65.0 Recommended
+### API Version: v66.0 Recommended
 
-**Problem:** Documentation referenced v60.0, but Data 360 Query SQL API requires v64.0+. We recommend v65.0 (Winter '26).
+**Problem:** Documentation referenced v60.0, but Data 360 Query SQL API requires v64.0+. We recommend v66.0 (Spring '26).
 
 **Fix:**
 ```python
 # Wrong (v60.0)
 url = f"{instance_url}/services/data/v60.0/ssot/querybuilder/execute"
 
-# Correct (v65.0)
-url = f"{instance_url}/services/data/v65.0/ssot/query-sql"
+# Correct (v66.0)
+url = f"{instance_url}/services/data/v66.0/ssot/query-sql"
 ```
 
 ### Field Naming: AiAgent (lowercase 'i')

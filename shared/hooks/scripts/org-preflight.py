@@ -14,7 +14,7 @@ OUTPUT EXAMPLE:
 ✅ Default org: MyScratchOrg (user@example.com)
 ✅ Auth status: Valid (expires in 23h)
 ✅ Instance URL: https://na139.salesforce.com
-✅ API version: 65.0
+✅ API version: 66.0
 
 ═══════════════════════════════════════════════════════════════════════════
 
@@ -260,9 +260,9 @@ def format_preflight_output(org_info: Dict) -> str:
     api_note = ""
     try:
         api_float = float(api_version)
-        if api_float < 65.0:
+        if api_float < 66.0:
             api_icon = "⚠️"
-            api_note = " (consider upgrading to 65.0)"
+            api_note = " (consider upgrading to 66.0)"
     except (ValueError, TypeError):
         pass
 

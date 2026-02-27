@@ -366,7 +366,7 @@ class Data360Auth:
         """
         Test the authentication by making a simple Data 360 Query API call.
 
-        Uses the v65.0 Query SQL endpoint to verify:
+        Uses the v66.0 Query SQL endpoint to verify:
         1. Token is valid
         2. Data 360 is accessible
         3. User has cdp_query_api permissions
@@ -379,8 +379,8 @@ class Data360Auth:
         """
         token = self.get_token()
 
-        # Test with a simple Data 360 Query API call (v65.0)
-        url = f"{self.instance_url}/services/data/v65.0/ssot/query-sql"
+        # Test with a simple Data 360 Query API call (v66.0)
+        url = f"{self.instance_url}/services/data/v66.0/ssot/query-sql"
 
         # Minimal query to test connectivity - just check if STDM DMO exists
         test_query = {

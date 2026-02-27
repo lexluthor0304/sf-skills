@@ -7,7 +7,7 @@ Provides type-safe models for:
 - AIAgentInteractionStep (LLM/Action steps)
 - AIAgentMoment (Messages/Summaries)
 
-Schema validated against live org (Jan 2026) using Data 360 v65.0 API.
+Schema validated against live org (Jan 2026) using Data 360 v66.0 API.
 Note: Field names use 'AiAgent' (lowercase 'i'), not 'AIAgent'.
 
 Usage:
@@ -28,7 +28,7 @@ import pyarrow as pa
 
 
 # ============================================================================
-# Pydantic Models (updated for v65.0 schema)
+# Pydantic Models (updated for v66.0 schema)
 # ============================================================================
 
 class AIAgentSession(BaseModel):
@@ -288,7 +288,7 @@ class GenAIContentCategory(BaseModel):
 
 
 # ============================================================================
-# PyArrow Schemas (updated for v65.0)
+# PyArrow Schemas (updated for v66.0)
 # ============================================================================
 
 SESSION_SCHEMA = pa.schema([

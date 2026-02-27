@@ -426,7 +426,7 @@ When generating flows programmatically or manually editing XML:
 ```xml
 <!-- ❌ THIS WILL FAIL DEPLOYMENT -->
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>65.0</apiVersion>
+    <apiVersion>66.0</apiVersion>
     <label>My Agent Flow</label>
     <processType>AutoLaunchedFlow</processType>
     <status>Active</status>
@@ -460,7 +460,7 @@ Even for simple pass-through flows, add at least one assignment:
 
 ```xml
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>65.0</apiVersion>
+    <apiVersion>66.0</apiVersion>
     <label>My Agent Flow</label>
     <processType>AutoLaunchedFlow</processType>
     <status>Active</status>

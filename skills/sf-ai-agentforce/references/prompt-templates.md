@@ -790,7 +790,7 @@ For enhanced context using Data Cloud:
         <members>*</members>
         <name>PromptTemplate</name>
     </types>
-    <version>65.0</version>
+    <version>66.0</version>
 </Package>
 ```
 

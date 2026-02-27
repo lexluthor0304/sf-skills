@@ -6,7 +6,7 @@ description: >
   escalation matrices, and guardrail configurations. Validates existing
   agents against conversation design best practices with 120-point scoring.
 license: MIT
-compatibility: "Agentforce license, API v65.0+, Einstein Agent runtime"
+compatibility: "Agentforce license, API v66.0+, Einstein Agent runtime"
 metadata:
   version: "1.0.0"
   author: "Jag Valaiyapathy"

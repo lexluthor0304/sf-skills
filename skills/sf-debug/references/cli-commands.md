@@ -157,7 +157,7 @@ sf data query \
   --target-org my-org \
   --use-tooling-api
 # Note: --explain does not exist. Use REST API for query plans:
-# GET /services/data/v62.0/query/?explain=SELECT+Id+FROM+Account+WHERE+Name='Test'
+# GET /services/data/v66.0/query/?explain=SELECT+Id+FROM+Account+WHERE+Name='Test'
 ```
 
 ### Log Analysis with grep

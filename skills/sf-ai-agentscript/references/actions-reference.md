@@ -424,7 +424,7 @@ public class WrappedAction {
 
 If you're NOT using Agent Script and are building agents through the Agent Builder UI, you need GenAiFunction metadata to wrap the Apex class. See the `assets/metadata/genai-function-apex.xml` template for the XML format.
 
-> **Note**: GenAiFunction XML (API v65.0) only supports these elements: `masterLabel`, `description`, `invocationTarget`, `invocationTargetType`, `isConfirmationRequired`. Input/output schemas are defined via `input/schema.json` and `output/schema.json` bundle files, NOT inline XML elements.
+> **Note**: GenAiFunction XML (API v66.0) only supports these elements: `masterLabel`, `description`, `invocationTarget`, `invocationTargetType`, `isConfirmationRequired`. Input/output schemas are defined via `input/schema.json` and `output/schema.json` bundle files, NOT inline XML elements.
 
 ---
 
@@ -545,7 +545,7 @@ actions:
 `GenAiFunction` wraps Apex, Flows, or Prompts as Agent Actions **for the Agent Builder UI path**.
 
 ```xml
-<!-- Minimal valid GenAiFunction XML (API v65.0) -->
+<!-- Minimal valid GenAiFunction XML (API v66.0) -->
 <GenAiFunction xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>What this action does</description>
     <invocationTarget>FlowOrApexName</invocationTarget>
@@ -555,7 +555,7 @@ actions:
 </GenAiFunction>
 ```
 
-**Input/Output Schemas**: Use `input/schema.json` and `output/schema.json` files in the GenAiFunction bundle directory. Do NOT use inline XML elements like `<genAiFunctionInputs>`, `<genAiFunctionOutputs>`, `<genAiFunctionParameters>`, or `<capability>` — these are NOT valid in the Metadata API XML schema (API v65.0).
+**Input/Output Schemas**: Use `input/schema.json` and `output/schema.json` files in the GenAiFunction bundle directory. Do NOT use inline XML elements like `<genAiFunctionInputs>`, `<genAiFunctionOutputs>`, `<genAiFunctionParameters>`, or `<capability>` — these are NOT valid in the Metadata API XML schema (API v66.0).
 
 ### Prompt Template Types
 

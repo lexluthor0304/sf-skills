@@ -157,7 +157,7 @@ MEDIUM_PATTERNS = [
     {
         "pattern": r"--api-version\s+(?:[1-4]\d|5[0-5])\b",
         "message": "Old API version detected (< v56)",
-        "suggestion": "Consider using API v62+ for latest features",
+        "suggestion": "Consider using API v66+ for latest features",
         "context": "salesforce"
     },
     # SOQL without USER_MODE

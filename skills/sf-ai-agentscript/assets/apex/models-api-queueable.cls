@@ -4,7 +4,7 @@
  * @author {{Author}}
  * @date {{Date}}
  *
- * @requires API v61.0+ (Spring '25)
+ * @requires API v61.0+ (Spring '24)
  * @requires Einstein Generative AI enabled
  * @requires Einstein Generative AI User permission set
  *

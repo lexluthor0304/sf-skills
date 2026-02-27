@@ -440,7 +440,7 @@ The skill designs:
 ### Phase 3: Validation
 
 ```
-Flow Validation Report: Customer_Feedback_Screen_Flow (API 65.0)
+Flow Validation Report: Customer_Feedback_Screen_Flow (API 66.0)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Score: 108/110 ⭐⭐⭐⭐⭐ Excellent

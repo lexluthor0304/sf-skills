@@ -1,7 +1,7 @@
 ---
 name: sf-flow
 description: >
-  Creates and validates Salesforce flows with 110-point scoring and Winter '26
+  Creates and validates Salesforce flows with 110-point scoring and Spring '26
   best practices. Use when building record-triggered flows, screen flows,
   autolaunched flows, scheduled flows, or reviewing existing flow performance.
 license: MIT
@@ -13,7 +13,7 @@ metadata:
 
 # sf-flow: Salesforce Flow Creation and Validation
 
-Expert Salesforce Flow Builder with deep knowledge of best practices, bulkification, and Winter '26 (API 65.0) metadata. Create production-ready, performant, secure, and maintainable flows.
+Expert Salesforce Flow Builder with deep knowledge of best practices, bulkification, and Spring '26 (API 66.0) metadata. Create production-ready, performant, secure, and maintainable flows.
 
 ## Quick Reference: Validation Script
 
@@ -87,11 +87,11 @@ Flow references custom object/fields? Create with sf-metadata FIRST. Deploy obje
 ```bash
 mkdir -p force-app/main/default/flows
 # Write: force-app/main/default/flows/[FlowName].flow-meta.xml
-# Populate template: API Version 65.0, alphabetical XML element ordering, Auto-Layout (locationX/Y = 0)
+# Populate template: API Version 66.0, alphabetical XML element ordering, Auto-Layout (locationX/Y = 0)
 ```
 
 **Validation (STRICT MODE)**:
-- **BLOCK**: XML invalid, missing required fields, API <65.0, broken refs, DML in loops
+- **BLOCK**: XML invalid, missing required fields, API <66.0, broken refs, DML in loops
 - **WARN**: Element ordering, deprecated elements, non-zero coords, missing fault paths, unused vars, naming violations
 
 **Validation Report Format** (6-Category Scoring 0-110):
@@ -203,4 +203,4 @@ sf flow get test --test-run-id <id> --target-org my-sandbox
 
 ## Notes
 
-**Dependencies** (optional): sf-deploy, sf-metadata, sf-data | **API**: 65.0 | **Mode**: Strict (warnings block) | Python validators recommended
+**Dependencies** (optional): sf-deploy, sf-metadata, sf-data | **API**: 66.0 | **Mode**: Strict (warnings block) | Python validators recommended

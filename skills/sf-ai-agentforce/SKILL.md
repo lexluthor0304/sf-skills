@@ -6,7 +6,7 @@ description: >
   GenAiFunction/GenAiPlugin setup, and custom Lightning types.
   For Agent Script DSL development, use sf-ai-agentscript instead.
 license: MIT
-compatibility: "Requires API v65.0+ (Winter '26)"
+compatibility: "Requires API v66.0+ (Spring '26)"
 metadata:
   version: "2.1.0"
   author: "Jag Valaiyapathy"

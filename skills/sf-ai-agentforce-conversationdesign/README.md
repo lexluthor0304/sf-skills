@@ -51,7 +51,7 @@ Generates and validates conversation design artifacts for Agentforce agents:
 ## Prerequisites
 
 - Salesforce org with Agentforce license
-- API version 65.0+
+- API version 66.0+
 - Einstein Agent User in org
 - Familiarity with Agent Builder Setup UI
 

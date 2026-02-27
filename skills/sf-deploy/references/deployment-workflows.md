@@ -251,7 +251,7 @@ This file contains practical examples of common Salesforce deployment scenarios 
            <members>CustomObject__c</members>
            <name>CustomObject</name>
        </types>
-       <version>58.0</version>
+       <version>66.0</version>
    </Package>
    ```
 
