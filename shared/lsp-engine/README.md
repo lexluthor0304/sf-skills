@@ -6,58 +6,75 @@ Language Server Protocol integration for Salesforce development skills in Claude
 
 This module provides a shared LSP engine that enables real-time validation of Salesforce files during Claude Code authoring sessions. Currently supports:
 
-- **Agent Script** (`.agent` files) - via Salesforce VS Code extension (required)
-- **Apex** (`.cls`, `.trigger` files) - via Salesforce Apex extension (required)
-- **LWC** (`.js`, `.html` files) - via standalone npm package ✅
+- **Agent Script** (`.agent` files) - via direct download or VS Code extension
+- **Apex** (`.cls`, `.trigger` files) - via direct download or VS Code extension
+- **LWC** (`.js`, `.html` files) - via standalone npm package
+
+## Architecture: Cache-First Discovery
+
+Each wrapper script discovers its LSP server using a 3-tier priority chain:
+
+```
+Discovery order (per wrapper):
+  1. Local cache    ~/.claude/lsp-engine/servers/{apex,agentscript}/
+                    Downloaded via lsp-acquire.py — no VS Code needed
+  2. Env var        APEX_LSP_JAR / AGENTSCRIPT_LSP_SERVER
+                    Direct path override for custom setups
+  3. VS Code dirs   ~/.vscode/extensions/ etc.
+                    Fallback for users with VS Code installed
+  4. Error          Suggests running lsp-acquire.py
+```
+
+This means **VS Code is optional** — the installer automatically downloads LSP servers from the VS Code Marketplace during install, or you can run `lsp-acquire.py` manually.
 
 ## Prerequisites
 
-### Quick Reference: VS Code vs npm
+### Quick Reference
 
-| Language | VS Code Required? | npm Package Available? |
-|----------|-------------------|------------------------|
-| **LWC** | ❌ No | ✅ `@salesforce/lwc-language-server` |
-| **Apex** | ✅ Yes | ❌ No (Java JAR only) |
-| **Agent Script** | ✅ Yes | ❌ No |
+| Language | VS Code Required? | Standalone? |
+|----------|-------------------|-------------|
+| **LWC** | ❌ No | ✅ `npm install -g @salesforce/lwc-language-server` |
+| **Apex** | ❌ No | ✅ `python3 lsp-acquire.py apex` (or VS Code) |
+| **Agent Script** | ❌ No | ✅ `python3 lsp-acquire.py agentscript` (or VS Code) |
+
+### Runtimes
+
+- **Java 11+** — Required for Apex LSP (`brew install openjdk@21`)
+- **Node.js 18+** — Required for Agent Script and LWC LSPs (`brew install node`)
 
 ### For LWC (.js, .html files) - npm Package
 
-LWC is the **only** language with a standalone npm package:
+LWC has a standalone npm package (no download tool needed):
 
 ```bash
 npm install -g @salesforce/lwc-language-server
 ```
 
-That's it! No VS Code required.
+### For Apex & Agent Script - Direct Download (Recommended)
 
-### For Agent Script (.agent files) - VS Code Required
+The installer automatically downloads LSP servers. To manually download or update:
 
-**Why VS Code?** The Agent Script LSP is only distributed bundled within the VS Code extension. There is no standalone npm package or separate download available.
+```bash
+# Download all servers
+python3 ~/.claude/lsp-engine/lsp-acquire.py
 
-1. **VS Code with Agent Script Extension** (REQUIRED)
-   - Open VS Code
-   - Go to Extensions (Cmd+Shift+X)
-   - Search: "Agent Script" by Salesforce
-   - Install
+# Download specific server
+python3 ~/.claude/lsp-engine/lsp-acquire.py apex
+python3 ~/.claude/lsp-engine/lsp-acquire.py agentscript
 
-2. **Node.js 18+**
-   - Required by the LSP server
-   - Check: `node --version`
+# Check what would be downloaded (dry-run)
+python3 ~/.claude/lsp-engine/lsp-acquire.py --check
 
-### For Apex (.cls, .trigger files) - VS Code Required
+# Show current cache status
+python3 ~/.claude/lsp-engine/lsp-acquire.py --status
 
-**Why VS Code?** The Apex LSP is a Java-based JAR file (`apex-jorje-lsp.jar`) that is only distributed bundled within the VS Code Salesforce Extension Pack. There is no standalone npm package or separate download available.
+# Force re-download (e.g., after extension update)
+python3 ~/.claude/lsp-engine/lsp-acquire.py --force
+```
 
-1. **VS Code with Salesforce Extension Pack** (REQUIRED)
-   - Open VS Code
-   - Go to Extensions (Cmd+Shift+X)
-   - Search: "Salesforce Extension Pack"
-   - Install
+### For Apex & Agent Script - VS Code (Alternative)
 
-2. **Java 11+ (Adoptium/OpenJDK recommended)**
-   - Required by the Apex LSP server
-   - Check: `java --version`
-   - Download: https://adoptium.net/temurin/releases/
+If you already have VS Code with Salesforce extensions installed, the wrappers will find them automatically as a fallback. No additional setup needed.
 
 ## Usage
 
@@ -100,25 +117,59 @@ lsp-engine/
 ├── agentscript_wrapper.sh   # Shell wrapper for Agent Script LSP
 ├── apex_wrapper.sh          # Shell wrapper for Apex LSP
 ├── lwc_wrapper.sh           # Shell wrapper for LWC LSP
+├── lsp-acquire.py           # Direct download tool (VS Code Marketplace → local cache)
 ├── check_lsp_versions.sh    # Environment version checker
 ├── lsp_client.py            # Python LSP client (multi-language)
 ├── diagnostics.py           # Diagnostic formatting
-└── README.md               # This file
+├── servers/                 # Downloaded LSP server cache (auto-created)
+│   ├── manifest.json        # Version tracking (schema_version, SHA256, timestamps)
+│   ├── apex/                # Cached Apex LSP (apex-jorje-lsp.jar)
+│   └── agentscript/         # Cached AgentScript LSP (server.js + node_modules)
+└── README.md                # This file
 ```
+
+## `servers/manifest.json` Format
+
+The manifest tracks which LSP servers have been downloaded and their versions:
+
+```json
+{
+  "schema_version": 1,
+  "servers": {
+    "apex": {
+      "extension_id": "salesforce.salesforcedx-vscode-apex",
+      "extension_version": "62.10.0",
+      "vsix_sha256": "a1b2c3d4...",
+      "acquired_at": "2026-03-02T14:30:00Z"
+    },
+    "agentscript": {
+      "extension_id": "salesforce.agent-script-language-client",
+      "extension_version": "1.3.0",
+      "vsix_sha256": "e5f6g7h8...",
+      "acquired_at": "2026-03-02T14:31:00Z"
+    }
+  }
+}
+```
+
+The `servers/` directory is preserved across `install.py --update` runs to avoid
+re-downloading large binaries (~50MB+).
 
 ## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `APEX_LSP_JAR` | Direct path to apex-jorje-lsp.jar (skips discovery) | — |
+| `AGENTSCRIPT_LSP_SERVER` | Direct path to server.js (skips discovery) | — |
 | `VSCODE_EXTENSIONS_DIR` | Override VS Code extensions directory | Auto-detected (see below) |
 | `LSP_LOG_FILE` | Path to log file | `/dev/null` |
 | `NODE_PATH` | Custom Node.js path (Agent Script) | Auto-detected |
 | `JAVA_HOME` | Custom Java path (Apex) | Auto-detected |
 | `APEX_LSP_MEMORY` | JVM heap size in MB (Apex) | 2048 |
 
-### VS Code Extension Directory Discovery
+### VS Code Extension Directory Discovery (Fallback)
 
-The shell wrappers automatically search for VS Code extensions in this order:
+When no cached server or env var is set, the shell wrappers search for VS Code extensions:
 
 1. `$VSCODE_EXTENSIONS_DIR` (user override)
 2. `~/.vscode/extensions/` (VS Code desktop)
@@ -126,12 +177,6 @@ The shell wrappers automatically search for VS Code extensions in this order:
 4. `~/.vscode-insiders/extensions/` (VS Code Insiders desktop)
 5. `~/.vscode-server-insiders/extensions/` (VS Code Insiders remote)
 6. `~/.cursor/extensions/` (Cursor IDE)
-
-The first existing directory wins. To force a specific path:
-
-```bash
-export VSCODE_EXTENSIONS_DIR="$HOME/.cursor/extensions"
-```
 
 ## Environment Health Check
 
@@ -141,14 +186,16 @@ The LSP engine includes a version checker that monitors your development environ
 
 | Component | Source | Minimum | Recommended |
 |-----------|--------|---------|-------------|
-| **VS Code Extensions** | | | |
-| └─ Apex LSP | VS Code Marketplace | - | Latest |
+| **LSP Servers** | | | |
+| └─ Apex LSP | Cache or VS Code | - | Latest |
 | └─ LWC LSP | VS Code Marketplace | - | Latest |
-| └─ Agent Script LSP | VS Code Marketplace | - | Latest |
+| └─ Agent Script LSP | Cache or VS Code | - | Latest |
 | **Runtimes** | | | |
 | └─ Java | Local install | 11 | 21 LTS |
 | └─ Node.js | Local install | 18 | 22 LTS |
 | **Salesforce CLI** | npm registry | - | Latest stable |
+
+The version checker shows a **Source** column for LSP servers indicating whether they're loaded from `cache` (lsp-acquire.py) or `vscode` (VS Code extension directory).
 
 ### Automatic Checks (Weekly)
 
@@ -182,12 +229,12 @@ Cache location: `~/.cache/sf-skills/version_check.json`
 🔍 SF-SKILLS ENVIRONMENT CHECK (cached 2 days ago)
 ════════════════════════════════════════════════════════════════
 
-📦 VS CODE EXTENSIONS
-───────────────────────────────────────┬────────────┬──────────┬────────
-Component                              │ Installed  │ Latest   │ Status
-───────────────────────────────────────┼────────────┼──────────┼────────
-salesforce.salesforcedx-vscode-apex    │ 62.8.0     │ 62.10.0  │ ⚠️
-salesforce.agent-script-language-client│ 1.2.0      │ 1.2.0    │ ✅
+📦 LSP SERVERS
+──────────────────────────────────┬────────────┬──────────┬────────┬────────
+Component                         │ Installed  │ Latest   │ Source │ Status
+──────────────────────────────────┼────────────┼──────────┼────────┼────────
+salesforce.salesforcedx-vscode-ape│ 62.10.0    │ 62.10.0  │ cache  │ ✅
+salesforce.agent-script-language-c│ 1.2.0      │ 1.2.0    │ vscode │ ✅
 
 ⚙️  RUNTIMES
 ───────────────────────────────────────┬────────────┬──────────┬────────
@@ -200,14 +247,10 @@ Node.js                                │ 22         │ 22 LTS   │ ✅
 ───────────────────────────────────────┬────────────┬──────────┬────────
 Component                              │ Installed  │ Latest   │ Status
 ───────────────────────────────────────┼────────────┼──────────┼────────
-sf (@salesforce/cli)                   │ 2.72.0     │ 2.75.0   │ ⚠️
+sf (@salesforce/cli)                   │ 2.75.0     │ 2.75.0   │ ✅
 
 ════════════════════════════════════════════════════════════════
-💡 UPDATE COMMANDS:
-   code --install-extension salesforce.salesforcedx-vscode-apex
-   brew upgrade sf
-
-🔄 Next check: Jan 27, 2026 (or run with --force)
+🔄 Next check: Mar 09, 2026 (or run with --force)
 ```
 
 ### Disabling Automatic Checks
@@ -228,13 +271,11 @@ To disable the weekly check, remove the `SessionStart` hook from your skill's `h
 
 #### "LSP server not found"
 
-The VS Code Agent Script extension is not installed or is in a non-standard location:
-1. Install from VS Code Marketplace (or Cursor/Insiders equivalent)
-2. Verify in your IDE's extensions directory, e.g.:
-   - Desktop: `ls ~/.vscode/extensions/salesforce.agent-script-*`
-   - Remote SSH/WSL: `ls ~/.vscode-server/extensions/salesforce.agent-script-*`
-   - Cursor: `ls ~/.cursor/extensions/salesforce.agent-script-*`
-3. Or set `VSCODE_EXTENSIONS_DIR` to point to your extensions directory
+Try these in order:
+
+1. **Download directly** (recommended): `python3 ~/.claude/lsp-engine/lsp-acquire.py agentscript`
+2. **Point to existing server**: `export AGENTSCRIPT_LSP_SERVER=/path/to/server.js`
+3. **Install VS Code extension**: `code --install-extension salesforce.agent-script-language-client`
 
 #### "Node.js not found"
 
@@ -251,13 +292,11 @@ Upgrade to Node.js 18+:
 
 #### "Apex Language Server not found"
 
-The VS Code Salesforce Extension Pack is not installed or is in a non-standard location:
-1. Install from VS Code Marketplace: "Salesforce Extension Pack"
-2. Verify in your IDE's extensions directory, e.g.:
-   - Desktop: `ls ~/.vscode/extensions/salesforce.salesforcedx-vscode-apex-*/dist/apex-jorje-lsp.jar`
-   - Remote SSH/WSL: `ls ~/.vscode-server/extensions/salesforce.salesforcedx-vscode-apex-*/dist/apex-jorje-lsp.jar`
-   - Cursor: `ls ~/.cursor/extensions/salesforce.salesforcedx-vscode-apex-*/dist/apex-jorje-lsp.jar`
-3. Or set `VSCODE_EXTENSIONS_DIR` to point to your extensions directory
+Try these in order:
+
+1. **Download directly** (recommended): `python3 ~/.claude/lsp-engine/lsp-acquire.py apex`
+2. **Point to existing JAR**: `export APEX_LSP_JAR=/path/to/apex-jorje-lsp.jar`
+3. **Install VS Code extension**: `code --install-extension salesforce.salesforcedx-vscode-apex`
 
 #### "Java not found"
 
@@ -286,7 +325,7 @@ which lwc-language-server
 # Should return: /opt/homebrew/bin/lwc-language-server (or similar)
 ```
 
-**Note:** Unlike Apex and Agent Script, LWC does NOT require VS Code. The npm package works standalone.
+**Note:** Unlike Apex and Agent Script, LWC does NOT require VS Code or lsp-acquire.py. The npm package works standalone.
 
 #### "Node.js not found" or "Node.js version too old"
 
@@ -306,6 +345,9 @@ Same as Agent Script - install/upgrade Node.js 18+.
    - agentscript_wrapper.sh for .agent
    - apex_wrapper.sh for .cls/.trigger
    - lwc_wrapper.sh for .js/.html (LWC)
+         │
+         ▼
+   Wrapper discovers server: cache → env var → VS Code → error
          │
          ▼
 4. Sends textDocument/didOpen with file content

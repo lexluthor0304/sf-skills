@@ -134,19 +134,60 @@ update_timestamp() {
 # Version Detection Functions
 # ============================================================================
 
-# Get installed VS Code extension version
+# Get installed extension version and source (cache or vscode)
+# Outputs: "version" on stdout; sets EXT_SOURCE_<sanitized_id> to "cache" or "vscode"
 get_installed_extension_version() {
     local ext_id="$1"
-    local ext_dir
+    local sanitized_id
+    sanitized_id=$(echo "$ext_id" | tr '.-' '__')
 
-    # Find extension directory (handles version suffix)
+    # 1. Check local cache (servers/manifest.json)
+    local manifest_file="$SCRIPT_DIR/servers/manifest.json"
+    if [[ -f "$manifest_file" ]]; then
+        # Map extension IDs to server names used in manifest
+        local server_name=""
+        case "$ext_id" in
+            salesforce.salesforcedx-vscode-apex) server_name="apex" ;;
+            salesforce.agent-script-language-client) server_name="agentscript" ;;
+        esac
+
+        if [[ -n "$server_name" ]]; then
+            # Extract version from manifest using grep/sed (no jq dependency)
+            # Look for the server block and extract extension_version
+            local cached_version
+            cached_version=$(grep -A5 "\"$server_name\"" "$manifest_file" 2>/dev/null \
+                | grep '"extension_version"' \
+                | sed 's/.*"\([0-9][0-9.]*\)".*/\1/' \
+                | head -1)
+
+            if [[ -n "$cached_version" ]]; then
+                # Verify the actual server files exist
+                local verify_ok=false
+                case "$server_name" in
+                    apex)        [[ -f "$SCRIPT_DIR/servers/apex/apex-jorje-lsp.jar" ]] && verify_ok=true ;;
+                    agentscript) [[ -f "$SCRIPT_DIR/servers/agentscript/server.js" ]] && verify_ok=true ;;
+                esac
+
+                if $verify_ok; then
+                    eval "EXT_SOURCE_${sanitized_id}=cache"
+                    echo "$cached_version"
+                    return
+                fi
+            fi
+        fi
+    fi
+
+    # 2. Check VS Code extension directories
+    local ext_dir
     ext_dir=$(find "$VSCODE_EXT_DIR" -maxdepth 1 -type d -name "${ext_id}-*" 2>/dev/null | sort -V | tail -1)
 
     if [[ -z "$ext_dir" ]]; then
+        eval "EXT_SOURCE_${sanitized_id}=none"
         echo ""
         return
     fi
 
+    eval "EXT_SOURCE_${sanitized_id}=vscode"
     # Extract version from directory name (e.g., salesforce.xxx-62.8.0 -> 62.8.0)
     basename "$ext_dir" | sed "s/${ext_id}-//"
 }
@@ -320,11 +361,18 @@ get_status() {
 # Print table header
 print_header() {
     local title="$1"
+    local show_source="${2:-false}"
     echo ""
     echo "$title"
-    printf '───────────────────────────────────────┬────────────┬──────────┬────────\n'
-    printf '%-39s│ %-10s │ %-8s │ %s\n' "Component" "Installed" "Latest" "Status"
-    printf '───────────────────────────────────────┼────────────┼──────────┼────────\n'
+    if $show_source; then
+        printf '──────────────────────────────────┬────────────┬──────────┬────────┬────────\n'
+        printf '%-34s│ %-10s │ %-8s │ %-6s │ %s\n' "Component" "Installed" "Latest" "Source" "Status"
+        printf '──────────────────────────────────┼────────────┼──────────┼────────┼────────\n'
+    else
+        printf '───────────────────────────────────────┬────────────┬──────────┬────────\n'
+        printf '%-39s│ %-10s │ %-8s │ %s\n' "Component" "Installed" "Latest" "Status"
+        printf '───────────────────────────────────────┼────────────┼──────────┼────────\n'
+    fi
 }
 
 # Print table row
@@ -333,6 +381,7 @@ print_row() {
     local installed="$2"
     local latest="$3"
     local status="$4"
+    local source="${5:-}"
 
     local status_icon
     case "$status" in
@@ -343,11 +392,16 @@ print_row() {
     esac
 
     # Truncate name if too long
-    local display_name="${name:0:37}"
     local display_installed="${installed:-N/A}"
     local display_latest="${latest:-N/A}"
 
-    printf '%-39s│ %-10s │ %-8s │ %s\n' "$display_name" "$display_installed" "$display_latest" "$status_icon"
+    if [[ -n "$source" ]]; then
+        local display_name="${name:0:32}"
+        printf '%-34s│ %-10s │ %-8s │ %-6s │ %s\n' "$display_name" "$display_installed" "$display_latest" "$source" "$status_icon"
+    else
+        local display_name="${name:0:37}"
+        printf '%-39s│ %-10s │ %-8s │ %s\n' "$display_name" "$display_installed" "$display_latest" "$status_icon"
+    fi
 }
 
 # ============================================================================
@@ -369,7 +423,13 @@ run_checks() {
         local status
         status=$(get_status "$installed" "$latest")
 
-        results+=("ext|$ext_id|$display_name|$installed|$latest|$status")
+        # Retrieve the source that was set by get_installed_extension_version
+        local sanitized_id
+        sanitized_id=$(echo "$ext_id" | tr '.-' '__')
+        local source_var="EXT_SOURCE_${sanitized_id}"
+        local source="${!source_var:-none}"
+
+        results+=("ext|$ext_id|$display_name|$installed|$latest|$status|$source")
 
         [[ "$status" == "UPDATE" || "$status" == "NOT_INSTALLED" ]] && updates_available=true
     done
@@ -414,10 +474,10 @@ run_checks() {
     local json_results='{"timestamp":'$(date +%s)',"results":['
     local first=true
     for result in "${results[@]}"; do
-        IFS='|' read -r type id name installed latest status <<< "$result"
+        IFS='|' read -r type id name installed latest status source <<< "$result"
         $first || json_results+=','
         first=false
-        json_results+="{\"type\":\"$type\",\"id\":\"$id\",\"name\":\"$name\",\"installed\":\"$installed\",\"latest\":\"$latest\",\"status\":\"$status\"}"
+        json_results+="{\"type\":\"$type\",\"id\":\"$id\",\"name\":\"$name\",\"installed\":\"$installed\",\"latest\":\"$latest\",\"status\":\"$status\",\"source\":\"${source:-}\"}"
     done
     json_results+='],"updates_available":'
     $updates_available && json_results+='true' || json_results+='false'
@@ -445,11 +505,11 @@ display_results() {
     echo "🔍 SF-SKILLS ENVIRONMENT CHECK (cached $cache_age)"
     echo "════════════════════════════════════════════════════════════════"
 
-    # VS Code Extensions
-    print_header "📦 VS CODE EXTENSIONS"
+    # LSP Servers (VS Code Extensions or Direct Download)
+    print_header "📦 LSP SERVERS" true
     for result in "${results[@]}"; do
-        IFS='|' read -r type id name installed latest status <<< "$result"
-        [[ "$type" == "ext" ]] && print_row "$id" "$installed" "$latest" "$status"
+        IFS='|' read -r type id name installed latest status source <<< "$result"
+        [[ "$type" == "ext" ]] && print_row "$id" "$installed" "$latest" "$status" "${source:-}"
     done
 
     # Runtimes
@@ -472,7 +532,7 @@ display_results() {
     # Show update commands if needed
     local has_updates=false
     for result in "${results[@]}"; do
-        IFS='|' read -r type id name installed latest status <<< "$result"
+        IFS='|' read -r type id name installed latest status source <<< "$result"
         if [[ "$status" == "UPDATE" || "$status" == "NOT_INSTALLED" ]]; then
             has_updates=true
             break
@@ -482,10 +542,19 @@ display_results() {
     if $has_updates; then
         echo "💡 UPDATE COMMANDS:"
         for result in "${results[@]}"; do
-            IFS='|' read -r type id name installed latest status <<< "$result"
+            IFS='|' read -r type id name installed latest status source <<< "$result"
             if [[ "$status" == "UPDATE" || "$status" == "NOT_INSTALLED" ]]; then
                 case "$type" in
-                    ext)     echo "   code --install-extension $id" ;;
+                    ext)
+                        if [[ "${source:-}" == "cache" ]]; then
+                            echo "   python3 ~/.claude/lsp-engine/lsp-acquire.py --force"
+                        elif [[ "$status" == "NOT_INSTALLED" ]]; then
+                            echo "   python3 ~/.claude/lsp-engine/lsp-acquire.py  (recommended)"
+                            echo "   code --install-extension $id  (alternative)"
+                        else
+                            echo "   code --install-extension $id"
+                        fi
+                        ;;
                     runtime)
                         case "$id" in
                             java) echo "   brew install openjdk@$JAVA_REC_VERSION" ;;

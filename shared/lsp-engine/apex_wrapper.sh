@@ -3,28 +3,25 @@
 # Apex Language Server Wrapper for sf-skills Plugin
 # ============================================================================
 # This script discovers and invokes the Salesforce Apex Language Server
-# (apex-jorje-lsp.jar) from the VS Code extension.
+# (apex-jorje-lsp.jar) using a cache-first discovery model:
 #
-# IMPORTANT: VS Code Extension REQUIRED
-# --------------------------------------
-# Unlike LWC (which has a standalone npm package), the Apex Language Server
-# is a Java-based JAR file (apex-jorje-lsp.jar) that is ONLY distributed
-# bundled within the VS Code Salesforce Extension Pack. There is NO standalone
-# npm package or separate download available.
-#
-# The JAR is located at:
-#   ~/.vscode/extensions/salesforce.salesforcedx-vscode-apex-*/dist/apex-jorje-lsp.jar
+#   1. Local cache   ~/.claude/lsp-engine/servers/apex/apex-jorje-lsp.jar
+#                    (downloaded via lsp-acquire.py — no VS Code needed)
+#   2. Env var       APEX_LSP_JAR=/path/to/apex-jorje-lsp.jar
+#   3. VS Code       ~/.vscode/extensions/salesforce.salesforcedx-vscode-apex-*
+#                    (fallback for users with VS Code installed)
 #
 # Prerequisites:
-#   - VS Code with Salesforce Apex extension installed (REQUIRED)
 #   - Java 11+ installed (Adoptium/OpenJDK recommended)
+#   - One of: lsp-acquire.py cache, APEX_LSP_JAR env var, or VS Code extension
 #
 # Usage:
 #   ./apex_wrapper.sh [--stdio]
 #
 # Environment:
-#   LSP_LOG_FILE - Path to log file (optional, default: /dev/null)
-#   JAVA_HOME    - Custom Java installation path (optional, auto-detected)
+#   APEX_LSP_JAR    - Direct path to apex-jorje-lsp.jar (optional, skips discovery)
+#   LSP_LOG_FILE    - Path to log file (optional, default: /dev/null)
+#   JAVA_HOME       - Custom Java installation path (optional, auto-detected)
 #   APEX_LSP_MEMORY - JVM heap size in MB (optional, default: 2048)
 # ============================================================================
 
@@ -113,11 +110,27 @@ validate_java_version() {
     return 0
 }
 
-# Find VS Code Apex extension directory (handles version updates)
+# Discover Apex LSP JAR: cache → env var → VS Code extension
 find_apex_extension() {
+    # 1. Check local cache (downloaded via lsp-acquire.py)
+    local cached_jar="$SCRIPT_DIR/servers/apex/apex-jorje-lsp.jar"
+    if [[ -f "$cached_jar" ]]; then
+        log "Using cached Apex LSP: $cached_jar"
+        echo "$cached_jar"
+        return 0
+    fi
+
+    # 2. Check env var override
+    if [[ -n "${APEX_LSP_JAR:-}" ]] && [[ -f "$APEX_LSP_JAR" ]]; then
+        log "Using APEX_LSP_JAR: $APEX_LSP_JAR"
+        echo "$APEX_LSP_JAR"
+        return 0
+    fi
+
+    # 3. Fall back to VS Code extension directories
     local ext_base
     if ! ext_base=$(find_vscode_ext_dir); then
-        log "VS Code extensions directory not found. Searched: ~/.vscode/extensions, ~/.vscode-server/extensions, ~/.vscode-insiders/extensions, ~/.vscode-server-insiders/extensions, ~/.cursor/extensions"
+        log "No cached server, no APEX_LSP_JAR, and no VS Code extensions directory found."
         return 1
     fi
 
@@ -165,15 +178,19 @@ main() {
         exit 1
     fi
 
-    # Discover LSP server from VS Code extension
+    # Discover LSP server (cache → env var → VS Code)
     local jar_path
     if ! jar_path=$(find_apex_extension); then
         echo "Error: Apex Language Server not found." >&2
-        echo "Please install the VS Code Salesforce Extensions:" >&2
-        echo "  1. Open VS Code" >&2
-        echo "  2. Extensions (Cmd+Shift+X / Ctrl+Shift+X)" >&2
-        echo "  3. Search: 'Salesforce Extension Pack'" >&2
-        echo "  4. Install" >&2
+        echo "" >&2
+        echo "Option 1 — Download directly (no VS Code needed):" >&2
+        echo "  python3 ~/.claude/lsp-engine/lsp-acquire.py apex" >&2
+        echo "" >&2
+        echo "Option 2 — Point to an existing JAR:" >&2
+        echo "  export APEX_LSP_JAR=/path/to/apex-jorje-lsp.jar" >&2
+        echo "" >&2
+        echo "Option 3 — Install VS Code Salesforce Extensions:" >&2
+        echo "  code --install-extension salesforce.salesforcedx-vscode-apex" >&2
         exit 1
     fi
     log "JAR path: $jar_path"

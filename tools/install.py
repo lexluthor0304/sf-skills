@@ -1762,12 +1762,77 @@ def copy_tools(source_dir: Path, target_dir: Path) -> int:
     return sum(1 for _ in target_dir.rglob("*") if _.is_file())
 
 
+def _has_vscode_extensions() -> bool:
+    """Check if any VS Code extensions directory exists with Salesforce extensions."""
+    candidates = [
+        Path.home() / ".vscode" / "extensions",
+        Path.home() / ".vscode-server" / "extensions",
+        Path.home() / ".vscode-insiders" / "extensions",
+        Path.home() / ".vscode-server-insiders" / "extensions",
+        Path.home() / ".cursor" / "extensions",
+    ]
+    for ext_dir in candidates:
+        if ext_dir.is_dir():
+            # Check if any Salesforce extension is installed
+            for child in ext_dir.iterdir():
+                if child.name.startswith("salesforce."):
+                    return True
+    return False
+
+
+def _auto_acquire_lsp_servers(lsp_dir: Path) -> None:
+    """Auto-acquire LSP servers during install if no VS Code and no cache.
+
+    This makes the install fully self-contained — users just run the installer
+    and everything works. If download fails (no network, etc.), log a warning
+    and continue — LSP features will be unavailable but nothing else breaks.
+    """
+    servers_dir = lsp_dir / "servers"
+    acquire_script = lsp_dir / "lsp-acquire.py"
+
+    # Skip if acquire script doesn't exist
+    if not acquire_script.exists():
+        return
+
+    # Skip if servers already cached
+    has_apex = (servers_dir / "apex" / "apex-jorje-lsp.jar").exists()
+    has_agentscript = (servers_dir / "agentscript" / "server.js").exists()
+    if has_apex and has_agentscript:
+        return
+
+    # Skip if VS Code extensions are available (wrappers will find them)
+    if _has_vscode_extensions():
+        return
+
+    # Auto-acquire: download LSP servers from VS Code Marketplace
+    print_substep("Downloading LSP servers (no VS Code detected)...")
+    import subprocess
+    try:
+        result = subprocess.run(
+            [sys.executable, str(acquire_script), "--quiet"],
+            capture_output=True, text=True, timeout=120,
+        )
+        if result.returncode == 0:
+            print_substep("LSP servers downloaded (Apex + AgentScript)")
+        else:
+            # Non-fatal: LSP validation won't work but install continues
+            print_warning("LSP server download failed (network issue?)")
+            print_substep("Run manually later: python3 ~/.claude/lsp-engine/lsp-acquire.py")
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        print_warning(f"LSP auto-acquire skipped: {exc}")
+        print_substep("Run manually later: python3 ~/.claude/lsp-engine/lsp-acquire.py")
+
+
 def copy_lsp_engine(source_dir: Path, target_dir: Path) -> int:
     """
     Copy LSP engine directory (wrapper scripts for Apex, LWC, AgentScript LSPs).
 
     The lsp-engine contains shell wrapper scripts that interface with VS Code's
     Salesforce extensions to provide real-time syntax validation.
+
+    Preserves the servers/ directory across updates — it contains cached LSP
+    server binaries downloaded via lsp-acquire.py that are expensive to
+    re-download (~50MB+).
 
     Args:
         source_dir: Source lsp-engine directory
@@ -1779,14 +1844,35 @@ def copy_lsp_engine(source_dir: Path, target_dir: Path) -> int:
     if not source_dir.exists():
         return 0
 
+    # Preserve servers/ directory across updates (contains downloaded LSP servers)
+    servers_backup = None
+    servers_dir = target_dir / "servers"
+    if servers_dir.exists() and servers_dir.is_dir():
+        servers_backup = target_dir.parent / ".lsp-servers-backup"
+        if servers_backup.exists():
+            safe_rmtree(servers_backup)
+        shutil.move(str(servers_dir), str(servers_backup))
+
     if target_dir.exists() or target_dir.is_symlink():
         safe_rmtree(target_dir)
 
     shutil.copytree(source_dir, target_dir)
 
+    # Restore servers/ directory
+    if servers_backup and servers_backup.exists():
+        restored_dir = target_dir / "servers"
+        if restored_dir.exists():
+            safe_rmtree(restored_dir)
+        shutil.move(str(servers_backup), str(restored_dir))
+
     # Make wrapper scripts executable
     for script in target_dir.glob("*.sh"):
         script.chmod(script.stat().st_mode | 0o111)
+
+    # Make lsp-acquire.py executable
+    acquire_script = target_dir / "lsp-acquire.py"
+    if acquire_script.exists():
+        acquire_script.chmod(acquire_script.stat().st_mode | 0o111)
 
     # Count files
     return sum(1 for _ in target_dir.rglob("*") if _.is_file())
@@ -2247,6 +2333,9 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
             # Copy LSP engine (wrapper scripts for Apex, LWC, AgentScript LSPs)
             lsp_source = source_dir / "shared" / "lsp-engine"
             lsp_count = copy_lsp_engine(lsp_source, LSP_DIR)
+
+            # Auto-acquire LSP servers if no VS Code and no cached servers
+            _auto_acquire_lsp_servers(LSP_DIR)
 
             # Copy installer for self-updates
             installer_source = source_dir / "tools" / "install.py"
