@@ -308,7 +308,9 @@ These execute as **code**, not suggestions. The LLM cannot override them.
 
 ## 🐛 DEBUGGING & COMMON ISSUES
 
-> See [references/debugging-guide.md](references/debugging-guide.md) for the 6 span types (topic_enter, before_reasoning, reasoning, action_call, transition, after_reasoning), trace analysis workflow, and forensic debugging patterns.
+> See [references/debugging-guide.md](references/debugging-guide.md) for the 6 span types (topic_enter, before_reasoning, reasoning, action_call, transition, after_reasoning), trace analysis workflow, forensic debugging patterns, and **programmatic trace access via `sf agent preview` CLI**.
+>
+> See [references/instruction-resolution.md](references/instruction-resolution.md) § "What the LLM Actually Receives" for the 4-message prompt structure, compilation output verification, and how DSL compiles into system prompts + tool definitions.
 
 ### Common Issues Quick Reference
 

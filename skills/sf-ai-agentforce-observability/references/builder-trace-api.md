@@ -410,48 +410,35 @@ Params: {
 
 ## Capture Methodology
 
-### Option 1: Automated CDP Capture (Recommended)
+### Option 1: CLI Preview Commands (Recommended)
 
-Prerequisites:
-1. Node.js + Playwright (`npx playwright --version`)
-2. Chromium/Chrome with `--remote-debugging-port=9222`
+The `sf agent preview start/send/end` commands (beta) provide programmatic access to the same v1.1 trace data without browser automation:
 
 ```bash
-# Launch Playwright's Chromium (avoids enterprise policy issues)
-CHROMIUM="$HOME/Library/Caches/ms-playwright/chromium-*/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
-"$CHROMIUM" --remote-debugging-port=9222 --user-data-dir=/tmp/chromium-agentforce --no-first-run &
+# Start session → send utterance → end and get traces
+SESSION_ID=$(sf agent preview start --api-name My_Agent --target-org myOrg 2>/dev/null | jq -r '.sessionId')
+PLAN_ID=$(sf agent preview send --session-id "$SESSION_ID" --message "test" --target-org myOrg 2>/dev/null | jq -r '.messages[-1].planId')
+TRACES_PATH=$(sf agent preview end --session-id "$SESSION_ID" --target-org myOrg 2>/dev/null | jq -r '.tracesPath')
 
-# Authenticate via sf CLI frontdoor
-FRONTDOOR_URL=$(sf org open --target-org MY_ORG --url-only --json | jq -r '.result.url')
-# Navigate Chromium to $FRONTDOOR_URL, then to the Builder
-
-# Start capture
-cd skills/sf-ai-agentforce-observability
-npx tsx scripts/capture-trace-network.ts --port 9222 --output ./captures
-
-# Send test messages in Builder, then Ctrl+C to stop
+# Analyze trace
+jq '.' "$TRACES_PATH/$PLAN_ID.json"
 ```
 
-### Option 2: Manual HAR Export
+> For full workflow details, see **sf-ai-agentforce-testing** Phase F: trace-enriched preview testing.
+
+### Option 2: Manual HAR Export (Fallback)
 
 1. Open DevTools (`Cmd+Opt+I`) → Network tab
 2. Enable: ✅ Preserve log, ✅ Disable cache, Filter: Fetch/XHR
 3. Send test messages in Builder
 4. Right-click → "Save all as HAR with content"
-5. Analyze: `python3 scripts/analyze_trace_capture.py --har agentforce-trace.har`
+5. Analyze with `jq` or the trace analyzer in `sf-ai-agentforce-testing`
 
-### Analysis
+### Key Findings
 
-```bash
-# Text report
-python3 scripts/analyze_trace_capture.py captures/trace-capture-*.json
-
-# With curl replay templates
-python3 scripts/analyze_trace_capture.py captures/trace-capture-*.json --curl-templates
-
-# JSON machine-readable report
-python3 scripts/analyze_trace_capture.py captures/trace-capture-*.json --json-report
-```
+- The trace endpoint (`getSimulationPlanTraces`) returns the full `PlanSuccessResponse` with 13 step types
+- CLI approach (`sf agent preview`) saves traces as JSON files automatically — no network interception needed
+- Trace files contain complete LLM prompts, safety scores, grounding assessments, and action I/O
 
 ---
 

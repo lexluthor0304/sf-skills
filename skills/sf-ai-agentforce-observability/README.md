@@ -166,39 +166,9 @@ stdm_data/
     └── watermark.json
 ```
 
-## Trace Test (Builder Trace Capture)
+## Real-Time Trace Analysis
 
-Captures the full 13-step-type execution trace from the Agentforce Builder's internal API — far richer than the 5 types persisted to Data Cloud.
-
-### Setup
-
-```bash
-# Install trace-test dependencies (Playwright + helpers)
-pip install -r scripts/requirements-trace.txt
-playwright install chromium
-```
-
-### Usage
-
-```bash
-# Basic (headless by default)
-python3 scripts/cli.py trace-test \
-  --org MyOrg --agent My_Agent \
-  --utterances "Hello,What products do you offer?"
-
-# Headed mode (visible browser)
-python3 scripts/cli.py trace-test \
-  --org MyOrg --agent My_Agent \
-  --utterances tests.yaml --headed
-
-# Direct Builder URL (skips Studio navigation, ~15s faster)
-python3 scripts/cli.py trace-test \
-  --org MyOrg --agent My_Agent \
-  --utterances tests.yaml \
-  --builder-url "https://your-org.my.salesforce.com/AgentAuthoring/agentAuthoringBuilder.app#/project?projectId=..."
-```
-
-Builder URLs are cached automatically after first Studio discovery. Subsequent runs skip Studio navigation.
+For real-time agent trace capture and analysis (v1.1 PlanSuccessResponse with 13 step types), use **sf-ai-agentforce-testing** Phase F via `sf agent preview start/send/end`. This replaces the previous browser-based capture approach with a simpler CLI workflow.
 
 ## CLI Reference
 

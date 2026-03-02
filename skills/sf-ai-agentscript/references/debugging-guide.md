@@ -319,6 +319,70 @@ The LLM might ignore your instructions. The only way to truly prevent unwanted b
 
 ---
 
+## Programmatic Trace Access via CLI
+
+> **Beta**: `sf agent preview start/send/end` provides full v1.1 trace data with 13 step types — far richer than the 5-type STDM data in Builder UI.
+
+### Workflow
+
+```bash
+# 1. Start preview session
+SESSION_ID=$(sf agent preview start \
+  --api-name My_Agent \
+  --target-org myOrg 2>/dev/null | jq -r '.sessionId')
+
+# 2. Send utterance(s)
+PLAN_ID=$(sf agent preview send \
+  --session-id "$SESSION_ID" \
+  --message "I need help with my order" \
+  --target-org myOrg 2>/dev/null | jq -r '.messages[-1].planId')
+
+# 3. End session and get trace path
+TRACES_PATH=$(sf agent preview end \
+  --session-id "$SESSION_ID" \
+  --target-org myOrg 2>/dev/null | jq -r '.tracesPath')
+
+# 4. Analyze trace
+jq '.' "$TRACES_PATH/$PLAN_ID.json"
+```
+
+### Key `jq` Recipes for Agent Script Debugging
+
+```bash
+TRACE="$TRACES_PATH/$PLAN_ID.json"
+
+# What instructions did the LLM actually receive?
+jq -r '.steps[] | select(.stepType == "LLMStep") | .data.prompt_content[0].content' "$TRACE"
+
+# Which topic was selected and why?
+jq '.steps[] | select(.stepType == "TransitionStep") | {from: .data.from, to: .data.to}' "$TRACE"
+
+# What actions were available per iteration?
+jq '.steps[] | select(.stepType == "EnabledToolsStep") | .data.enabled_tools' "$TRACE"
+
+# Did any action fail?
+jq '.steps[] | select(.stepType == "FunctionStep") | {fn: .function, error: .error}' "$TRACE"
+
+# Variable state changes (verify instruction resolution)
+jq '.steps[] | select(.stepType == "VariableUpdateStep") | {var: .data.variableName, old: .data.oldValue, new: .data.newValue}' "$TRACE"
+```
+
+### Trace ↔ Agent Script Mapping
+
+| Agent Script Concept | Trace Step Type | What to Check |
+|---------------------|-----------------|---------------|
+| `instructions: ->` | `LLMStep.prompt_content[0]` | Verify resolved text appears |
+| `when` blocks | `LLMStep.prompt_content[3]` | Verify late-injected context |
+| `actions:` definitions | `EnabledToolsStep.enabled_tools` | Verify action visibility |
+| `available when:` | `EnabledToolsStep` (per iteration) | Verify conditional filtering |
+| `transition to` | `TransitionStep` | Verify from→to routing |
+| `run @actions.X` | `FunctionStep` | Verify inline action execution |
+| Variable assignments | `VariableUpdateStep` | Verify state mutations |
+
+> For full trace schema and analysis patterns, see **sf-ai-agentforce-testing** [trace-analysis.md](../../sf-ai-agentforce-testing/references/trace-analysis.md).
+
+---
+
 ## Planner Engine Differences
 
 Salesforce has multiple planner engines. Behavior differs between them, which affects debugging.

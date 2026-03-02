@@ -339,6 +339,70 @@ instructions: ->
 
 ---
 
+## What the LLM Actually Receives (Compilation Output)
+
+> Validated via `sf agent preview` v1.1 trace data. See **sf-ai-agentforce-testing** Phase F for programmatic trace capture.
+
+When a topic activates, the Agent Script DSL compiles into a **4-message prompt structure** sent to the LLM:
+
+| # | Message Role | Content | Source |
+|---|-------------|---------|--------|
+| 1 | `system` | Protocol + resolved instructions | DSL compilation |
+| 2 | `assistant` | Conversation history | Prior turns |
+| 3 | `user` | Current utterance | User input |
+| 4 | `system` | Late-injected context | `when` blocks + variables |
+
+### System Message 1 — Main Prompt Structure
+
+The first system message contains these sections IN ORDER:
+
+1. **TOOL USAGE PROTOCOL** — How the LLM should invoke tools (JSON schema, parameter formatting)
+2. **PROMPT INJECTION CRITERIA** — Instructions to detect and refuse injection attempts
+3. **SAFETY GUARDRAILS** — Toxicity, PII, harmful content rules
+4. **EQUALITY PRINCIPLES** — Non-discrimination guidelines
+5. **LANGUAGE GUIDELINES** — Response language matching rules
+6. **OFF-TOPIC RULES** — Topic boundary enforcement
+7. **RESPONSE GUIDELINES** — Formatting, tone, length preferences
+8. **PROHIBITED ACTIONS** — Actions the agent must never take
+9. **Resolved `system.instructions`** — Your DSL `instructions: ->` block after one-pass resolution
+
+The header varies by agent stage:
+- **Topic Selector** → `"Topic Selector & Safety Router"`
+- **Topic Agents** → `"Specialized Topic Agent"`
+
+### System Message 4 — Late-Injected Context
+
+Contains resolved `when` block instructions and customer context variables. This is where runtime context (`$Context.RoutableId`, custom variables) appears.
+
+### Tool Definitions (`tools_sent[]`)
+
+Actions compile into `tools_sent[]` as plain string names. Guardrails ALSO appear as tool names:
+- Regular actions: `Get_Order_Status`, `Process_Refund`
+- Guardrail tools: `Inappropriate_Content`, `Prompt_Injection`, `Reverse_Engineering`
+
+**Per-iteration tool visibility changes** — tools shift between reasoning iterations based on topic transitions. Extract with:
+
+```bash
+jq '.steps[] | select(.stepType == "EnabledToolsStep") | .data.enabled_tools' trace.json
+```
+
+### Verifying Compilation Output
+
+Use `jq` to extract the compiled prompt from trace files:
+
+```bash
+# Extract System Message 1 (your resolved instructions)
+jq '.steps[] | select(.stepType == "LLMStep") | .data.prompt_content[0].content' trace.json
+
+# Extract System Message 4 (late-injected context)
+jq '.steps[] | select(.stepType == "LLMStep") | .data.prompt_content[3].content' trace.json
+
+# Verify your instructions appear in the compiled output
+jq -r '.steps[] | select(.stepType == "LLMStep") | .data.prompt_content[0].content' trace.json | grep -c "your instruction text"
+```
+
+---
+
 ## Key Takeaways
 
 | # | Takeaway |
@@ -348,3 +412,5 @@ instructions: ->
 | 3 | **LLM Sees Clean Text** - No if/else logic visible, no action calls visible |
 | 4 | **Post-Action Loop** - Topic loops back after LLM action, instructions resolve AGAIN |
 | 5 | **Deterministic Follow-Up** - Use post-action checks to guarantee critical actions |
+| 6 | **4-Message Structure** - System (protocol) → Assistant (history) → User (utterance) → System (context) |
+| 7 | **Guardrails as Tools** - Safety guardrails compile into both system prompt text AND tool definitions |

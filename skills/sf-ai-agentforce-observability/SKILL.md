@@ -248,12 +248,6 @@ Based on analysis findings:
 | `extract-tree` | Extract full session tree | `extract-tree --org prod --session-id "a0x..."` |
 | `extract-incremental` | Resume from last run | `extract-incremental --org prod` |
 
-### Builder Trace Commands
-
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `trace-test` | Capture Builder traces | `trace-test --org prod --agent My_Agent --utterances tests.yaml` |
-
 ### Analysis Commands
 
 | Command | Purpose | Example |
@@ -297,6 +291,7 @@ See [references/cli-reference.md](references/cli-reference.md) for complete docu
 | `sf-ai-agentscript` | Fix topic routing issues | Use the **sf-ai-agentscript** skill: "Fix topic: [issue]" |
 | `sf-flow` / `sf-debug` | Debug action failures | Use the **sf-debug** skill: "Analyze agent action failure" |
 | `sf-ai-agentforce-testing` | Create test cases from patterns | Use the **sf-ai-agentforce-testing** skill: "Add test cases" |
+| `sf-ai-agentforce-testing` | Real-time agent trace analysis | Use **sf-ai-agentforce-testing** Phase F: trace-enriched preview testing |
 
 ---
 
