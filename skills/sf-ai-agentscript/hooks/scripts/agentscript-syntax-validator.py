@@ -114,6 +114,7 @@ class AgentScriptValidator:
         self._check_invalid_connections_wrapper()
         self._check_mutable_linked_conflict()
         self._check_reserved_variable_names()
+        self._check_undefined_variables()
         self._check_undefined_topics()
         self._check_multiline_descriptions()
         self._check_lifecycle_instruction_wrappers()
@@ -288,7 +289,7 @@ class AgentScriptValidator:
                     actions_indent = indent
                     continue
 
-                if actions_mode == "definition" and actions_indent is not None and indent > actions_indent:
+                if actions_mode in {"definition", "reasoning"} and actions_indent is not None and indent > actions_indent:
                     if current_action is None or indent == current_action["indent"]:
                         action_match = self.ACTION_DECL_PATTERN.match(stripped)
                         if action_match:
@@ -414,7 +415,6 @@ class AgentScriptValidator:
         required = {
             "system": False,
             "config": False,
-            "topic": False,
             "start_agent": False,
         }
         for line in self.lines:
@@ -423,8 +423,6 @@ class AgentScriptValidator:
                 required["system"] = True
             elif stripped.startswith("config:"):
                 required["config"] = True
-            elif stripped.startswith("topic "):
-                required["topic"] = True
             elif stripped.startswith("start_agent "):
                 required["start_agent"] = True
 
@@ -432,21 +430,33 @@ class AgentScriptValidator:
         if missing:
             self._add_error(
                 1,
-                f"Missing required blocks: {', '.join(missing)}. Every agent needs config, system, exactly one start_agent, and at least one topic.",
+                f"Missing required blocks: {', '.join(missing)}. Every agent needs config, system, and exactly one start_agent.",
             )
 
     def _check_config_fields(self):
         developer_name = self.config_fields.get("developer_name")
+        legacy_agent_name = self.config_fields.get("agent_name")
         agent_description = self.config_fields.get("agent_description")
+        legacy_description = self.config_fields.get("description")
         agent_type = self.config_fields.get("agent_type")
         default_agent_user = self.config_fields.get("default_agent_user")
 
-        if not developer_name:
-            self._add_error(1, "Missing 'developer_name' in config block. This field is required.")
-        if not agent_description:
-            self._add_error(1, "Missing 'agent_description' in config block. This field is required.")
+        if not developer_name and not legacy_agent_name:
+            self._add_error(1, "Missing agent identifier in config block. Use either 'developer_name' or legacy 'agent_name'.")
+        if not agent_description and not legacy_description:
+            self._add_error(1, "Missing agent description in config block. Use either 'agent_description' or legacy 'description'.")
+
         if not agent_type:
-            self._add_error(1, "Missing 'agent_type' in config block. Set it explicitly to 'AgentforceServiceAgent' or 'AgentforceEmployeeAgent'.")
+            if not default_agent_user:
+                self._add_error(
+                    1,
+                    "Missing both 'agent_type' and 'default_agent_user'. Without agent_type the compiler defaults to a Service Agent, which requires default_agent_user.",
+                )
+            else:
+                self._add_warning(
+                    1,
+                    "Missing 'agent_type'. This compiles when 'default_agent_user' is present because the compiler defaults to a Service Agent, but setting agent_type explicitly is safer.",
+                )
             return
 
         agent_type_value, agent_type_line = agent_type
@@ -480,9 +490,9 @@ class AgentScriptValidator:
     def _check_name_collisions(self):
         for name, line in self.start_agent_names.items():
             if name in self.topic_names:
-                self._add_error(
+                self._add_warning(
                     line,
-                    f"Name collision: start_agent '{name}' has the same API name as a topic. Use unique names for start_agent and topic blocks.",
+                    f"Name collision risk: start_agent '{name}' has the same API name as a topic. Current compiler validation may pass, but publish/runtime metadata can collide; use unique names.",
                 )
 
     def _check_name_rules(self, name: str, line: int, kind: str):
@@ -501,6 +511,9 @@ class AgentScriptValidator:
         if "developer_name" in self.config_fields:
             name, line = self.config_fields["developer_name"]
             self._check_name_rules(name, line, "developer_name")
+        elif "agent_name" in self.config_fields:
+            name, line = self.config_fields["agent_name"]
+            self._check_name_rules(name, line, "agent_name")
 
         for name, line in self.topic_names.items():
             self._check_name_rules(name, line, "topic name")
@@ -532,6 +545,35 @@ class AgentScriptValidator:
                     line,
                     f"Variable name '{name}' may conflict with platform context mappings. Prefer a prefixed name like 'customer_{name.lower()}'.",
                 )
+
+    def _check_undefined_variables(self):
+        ref_pattern = re.compile(r"@variables\.([A-Za-z_][A-Za-z0-9_]*)")
+        executable_prefixes = (
+            "|",
+            "if ",
+            "set ",
+            "run ",
+            "with ",
+            "available when",
+            "transition ",
+            "handoff:",
+        )
+        for i, line in enumerate(self.lines, 1):
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            if not (
+                stripped.startswith(executable_prefixes)
+                or (stripped.startswith("instructions:") and "@variables." in stripped)
+            ):
+                continue
+            for match in ref_pattern.finditer(line):
+                variable_name = match.group(1)
+                if variable_name not in self.variable_names:
+                    self._add_error(
+                        i,
+                        f"Reference to undefined variable '@variables.{variable_name}'. Declare it in the variables block before use.",
+                    )
 
     def _check_undefined_topics(self):
         ref_pattern = re.compile(r"@topic\.([A-Za-z][A-Za-z0-9_]*)")
@@ -587,9 +629,9 @@ class AgentScriptValidator:
         set_pattern = re.compile(r"^\s*set\s+.+?=\s*\[\]\s*(?:#.*)?$")
         for i, line in enumerate(self.lines, 1):
             if compare_pattern.search(line):
-                self._add_warning(i, "Empty list literal '[]' is not supported in expressions. Use len(@variables.list) == 0 instead.")
+                self._add_error(i, "Empty list literal '[]' is not supported in expressions. Use len(@variables.list) == 0 instead.")
             elif set_pattern.search(line):
-                self._add_warning(i, "Resetting with 'set ... = []' is a known parser gotcha. Use a temporary empty variable workaround instead.")
+                self._add_error(i, "Resetting with 'set ... = []' is a known parser gotcha. Use a temporary empty variable workaround instead.")
 
     def _check_inputs_in_set(self):
         pattern = re.compile(r"^\s*set\s+@variables\.[^=]+\s*=\s*@inputs\.")
@@ -602,14 +644,14 @@ class AgentScriptValidator:
         for i, line in enumerate(self.lines, 1):
             match = pattern.search(line)
             if match:
-                self._add_warning(i, f"Bare action name '{match.group(1)}' in run. Use '@actions.{match.group(1)}' explicitly.")
+                self._add_error(i, f"Bare action name '{match.group(1)}' in run. Use '@actions.{match.group(1)}' explicitly.")
 
     def _check_action_metadata_context(self):
         for action in self.action_definitions:
             if action["kind"] != "utility_transition":
                 continue
             for line, property_name in action["invalid_transition_properties"]:
-                self._add_warning(
+                self._add_error(
                     line,
                     f"'{property_name}' is not valid on @utils.transition actions. Use it only on target-backed action definitions with 'target:'.",
                 )
