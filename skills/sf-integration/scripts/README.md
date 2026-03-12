@@ -2,6 +2,8 @@
 
 Automation scripts for configuring Salesforce integrations without manual UI steps.
 
+> **Mirror note:** These files mirror the canonical generic helpers in the repository root `scripts/` directory. Keep both locations aligned until the packaging layout is consolidated.
+
 ## Scripts
 
 | Script | Purpose | Auth Type |

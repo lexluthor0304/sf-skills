@@ -25,7 +25,7 @@ This skill was developed from comprehensive documentation screenshots covering 8
 
 - [Agent Script Documentation](https://developer.salesforce.com/docs/ai/agentforce/guide/agent-script.html)
 - [Agentforce Builder Guide](https://help.salesforce.com/s/articleView?id=sf.copilot_builder_overview.htm)
-- [Atlas Reasoning Engine](https://developer.salesforce.com/docs/ai/agentforce/guide/atlas-reasoning-engine.html)
+- [Agentforce DX Guide](https://developer.salesforce.com/docs/ai/agentforce/guide/agent-dx.html)
 - [Salesforce CLI Agent Commands](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_agent_commands_unified.htm)
 
 ### Community Contributions

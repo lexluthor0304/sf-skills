@@ -22,6 +22,8 @@ This guide documents systematic errors that LLMs (including Claude) commonly mak
 
 ---
 
+<a id="1-non-existent-methods"></a>
+
 ## 1. Non-Existent Methods
 
 LLMs often hallucinate methods that don't exist in Apex, borrowing syntax from Java or other languages.

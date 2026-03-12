@@ -7,7 +7,7 @@ This skill was built upon the collective wisdom of the Salesforce Flow community
 ## Authors & Contributors
 
 ### Jennifer Lee
-**[Jenwlee.com](https://jenwlee.com/)** | **[YouTube](https://www.youtube.com/@jabordeaux)**
+**[Jenwlee.com](https://jenwlee.com/)** | **[YouTube](https://www.youtube.com/@Jenwlee)**
 
 Key contributions:
 - Flow best practices and design patterns

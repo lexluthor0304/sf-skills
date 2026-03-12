@@ -493,7 +493,7 @@ sf data query -q "SELECT Username FROM User WHERE Profile.Name = 'Einstein Agent
 
 - [Agent Script Documentation](https://developer.salesforce.com/docs/ai/agentforce/guide/agent-script.html) — Primary reference
 - [Agent Script Recipes](https://github.com/trailheadapps/agent-script-recipes) — Official examples
-- [Atlas Reasoning Engine](https://developer.salesforce.com/docs/einstein/genai/guide/atlas-reasoning-engine.html) — Reasoning internals
+- [Agentforce DX Guide](https://developer.salesforce.com/docs/ai/agentforce/guide/agent-dx.html) — Platform architecture and authoring workflow
 
 **Full Registry:** See [references/official-sources.md](references/official-sources.md) for 14 primary doc URLs, 8 recipe URLs, diagnostic decision tree, and fallback search patterns.
 

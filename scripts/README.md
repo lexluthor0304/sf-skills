@@ -5,6 +5,8 @@
 > 💡 **Pattern:** Each skill should have its own `scripts/setup-credentials.sh` that's tailored to that skill. These scripts in `/scripts/` are generic templates that can be copied and customized.
 >
 > **Example:** See `skills/sf-integration/scripts/` for a skill-specific implementation.
+>
+> **Canonical source note:** The root `/scripts/` directory is the source of truth for these generic integration helpers. Matching copies may also exist under `skills/sf-integration/` for skill-local distribution; keep them in sync until packaging is consolidated.
 
 ---
 

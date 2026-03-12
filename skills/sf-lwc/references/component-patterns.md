@@ -904,6 +904,8 @@ export default class WorkspaceTabManager extends LightningElement {
 
 ---
 
+<a id="parent-child-communication"></a>
+
 ## Parent-Child Communication
 
 ```javascript

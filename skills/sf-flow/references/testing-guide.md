@@ -205,6 +205,8 @@ For flows running in System Mode:
 
 ---
 
+<a id="5-flow-type-specific-testing"></a>
+
 ## 5. Flow Type-Specific Testing
 
 ### Screen Flows
@@ -437,6 +439,8 @@ If approaching limits:
 - **Heap**: Process in smaller batches
 
 ---
+
+<a id="9-post-deployment-verification"></a>
 
 ## 9. Post-Deployment Verification
 

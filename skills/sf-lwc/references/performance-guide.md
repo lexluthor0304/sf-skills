@@ -754,6 +754,8 @@ export default class MetricsTracker extends LightningElement {
 
 ---
 
+<a id="common-anti-patterns"></a>
+
 ## Common Anti-Patterns
 
 ### 1. Excessive Wire Calls
@@ -856,4 +858,4 @@ handleDataChange() {
 - [accessibility-guide.md](accessibility-guide.md) - A11y compliance
 - [jest-testing.md](jest-testing.md) - Testing strategies
 - [SLDS 2 Transition Guide](https://www.lightningdesignsystem.com/2e1ef8501/p/8184ad-transition-to-slds-2)
-- [LWC Performance Best Practices](https://developer.salesforce.com/docs/component-library/documentation/en/lwc/lwc.create_performance)
+- [LWC Developer Guide](https://developer.salesforce.com/docs/platform/lwc/guide)

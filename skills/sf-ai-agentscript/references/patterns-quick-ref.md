@@ -762,6 +762,8 @@ Before deploying an agent, verify:
 
 ---
 
+<a id="discovery-questions-pre-authoring"></a>
+
 ## Discovery Questions (Pre-Authoring)
 
 > Ask these questions before writing any Agent Script to clarify requirements and avoid rework. Sourced from [AGENT_SCRIPT.md](https://github.com/trailheadapps/agent-script-recipes).

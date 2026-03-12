@@ -113,7 +113,7 @@ Create Flows   Write agent         Test routing           Deploy to org
 
 - [Agent Script Documentation](https://developer.salesforce.com/docs/ai/agentforce/guide/agent-script.html)
 - [Agentforce Builder Guide](https://help.salesforce.com/s/articleView?id=sf.copilot_builder_overview.htm)
-- [Atlas Reasoning Engine](https://developer.salesforce.com/docs/ai/agentforce/guide/atlas-reasoning-engine.html)
+- [Agentforce DX Guide](https://developer.salesforce.com/docs/ai/agentforce/guide/agent-dx.html)
 
 ## License
 

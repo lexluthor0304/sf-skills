@@ -396,6 +396,8 @@ public class TriggerHelper {
 
 ---
 
+<a id="10-guard-clauses--fail-fast"></a>
+
 ## 10. Guard Clauses & Fail-Fast
 
 > 💡 *Principles inspired by "Clean Apex Code" by Pablo Gonzalez.

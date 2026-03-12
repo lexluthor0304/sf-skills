@@ -431,6 +431,8 @@
 
 ---
 
+<a id="issue-28"></a>
+
 ### Issue 28: `date` primitive type in action I/O causes runtime error
 - **Status**: WORKAROUND
 - **Date Discovered**: 2026-03-11
@@ -480,6 +482,8 @@
 - **Open Questions**: Is this a known infrastructure issue with an ETA for fix?
 
 ---
+
+<a id="issue-31"></a>
 
 ### Issue 31: Escalation loops when no human agents available
 - **Status**: WORKAROUND
@@ -550,6 +554,8 @@
 - **Cross-reference**: See syntax-reference.md § Expression Limitations.
 
 ---
+
+<a id="issue-34"></a>
 
 ### Issue 34: `is_displayable: True` on prompt template outputs causes blank response
 - **Status**: WORKAROUND
@@ -644,6 +650,8 @@
 - **Open Questions**: Will the preview interface add JSON editing for object/list variables?
 
 ---
+
+<a id="issue-39"></a>
 
 ### Issue 39: `@context.*` linked sources not supported for NGA Service Agents
 - **Status**: WORKAROUND

@@ -499,6 +499,8 @@ sf org open agent --api-name MyAgent -o TARGET_ORG --url-only
 
 ---
 
+<a id="three-phase-lifecycle"></a>
+
 ## Three-Phase Lifecycle
 
 ```

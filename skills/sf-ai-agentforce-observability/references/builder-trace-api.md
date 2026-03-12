@@ -474,8 +474,8 @@ Key findings from initial investigation:
 |-----|------------|------------|-------------|---------------|------|------|
 | **Builder Trace** (this doc) | 13 step types, full state | 13 | ✅ Yes | ✅ Yes | Browser cookies | Internal |
 | **Data Cloud STDM** | 5 step types, summaries | 5 | ❌ No | ❌ No | JWT Bearer | [query-patterns.md](query-patterns.md) |
-| **Testing API** | Actions + topic only | N/A | ❌ No | ❌ No | OAuth | [Salesforce Docs](https://developer.salesforce.com/docs/einstein/genai/guide/agent-testing-api.html) |
-| **Agent Runtime API** | Messages only — no trace | N/A | ❌ No | ❌ No | OAuth | [Salesforce Docs](https://developer.salesforce.com/docs/einstein/genai/guide/agent-runtime-api-overview.html) |
+| **Testing API** | Actions + topic only | N/A | ❌ No | ❌ No | OAuth | [Salesforce Docs](https://developer.salesforce.com/docs/einstein/genai/guide/testing-api-cli.html) |
+| **Agent Runtime API** | Messages only — no trace | N/A | ❌ No | ❌ No | OAuth | [Salesforce Docs](https://developer.salesforce.com/docs/einstein/genai/guide/agent-api-overview.html) |
 
 ---
 

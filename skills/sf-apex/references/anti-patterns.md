@@ -16,6 +16,8 @@ Comprehensive catalog of common Apex anti-patterns, code smells, and how to fix 
 
 ---
 
+<a id="critical-anti-patterns"></a>
+
 ## Critical Anti-Patterns
 
 These patterns will cause immediate failures or security vulnerabilities. **NEVER allow these in production code.**
@@ -344,6 +346,8 @@ if (acc.IsActive__c) {
 
 ---
 
+<a id="performance-anti-patterns"></a>
+
 ## Performance Anti-Patterns
 
 ### 1. Nested Loops with SOQL
@@ -451,6 +455,8 @@ Set<Id> uniqueIds = new Set<Id>(allIds);  // O(1) deduplication
 
 ---
 
+<a id="security-anti-patterns"></a>
+
 ## Security Anti-Patterns
 
 ### 1. without sharing Everywhere
@@ -517,6 +523,8 @@ req.setEndpoint('callout:MyNamedCredential/api');  // Auth handled by platform
 ```
 
 ---
+
+<a id="testing-anti-patterns"></a>
 
 ## Testing Anti-Patterns
 

@@ -289,6 +289,8 @@ public with sharing class {{EventName}}Handler {
 
 ---
 
+<a id="high-volume-vs-standard-volume-events"></a>
+
 ### High-Volume vs Standard-Volume Events
 
 | Feature | Standard-Volume | High-Volume |
@@ -466,6 +468,8 @@ public with sharing class {{ObjectName}}CDCHandler {
 ```
 
 ---
+
+<a id="field-specific-change-detection"></a>
 
 ### Field-Specific Change Detection
 

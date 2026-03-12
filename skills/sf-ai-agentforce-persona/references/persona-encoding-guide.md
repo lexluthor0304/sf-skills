@@ -134,6 +134,8 @@ Each topic can carry:
 **Example** (Deal Progressinator — deal summary topic):
 > When summarizing a deal, lead with a compact status line: emoji health indicator, deal name, stage, and score. Follow with a checklist of exit criteria (met / unmet). End with a concrete next step — not a list of options, a single recommendation. Use Salesforce record links for all referenced opportunities and contacts. If data is stale (last activity >2 weeks), flag it before summarizing.
 
+<a id="per-topic-encoding-patterns"></a>
+
 ### Per-Topic Encoding Patterns
 
 Topic Instructions follow a layered encoding model: global persona in Role, per-topic persona calibration in Topic Instructions, per-action presentation in Action Output Response Instructions. Each layer adds specificity.
@@ -154,6 +156,8 @@ Each topic gets a persona instruction block that calibrates the global persona f
 **Example** — deal analysis topic (moderate):
 > Brevity: Moderate. Lead with a recommendation and its rationale. Include supporting data points. Use bullet formatting for multi-factor analysis. End with a single next step.
 
+<a id="per-topic-lexicon"></a>
+
 #### Per-Topic Lexicon
 
 When an agent operates across multiple topics, each topic may have its own vocabulary — technical terms, brand-specific language, industry jargon. Lexicon defines which words belong where, loaded only in the topics where they're relevant rather than globally.
@@ -173,6 +177,8 @@ In order-tracking topics:
 > *(No lexicon block — generic service vocabulary applies. Don't use watch terminology in shipping status responses.)*
 
 The distinction matters because loading specialized vocabulary globally wastes context and can cause the agent to over-use jargon in simple service interactions. Scope vocabulary to where it belongs.
+
+<a id="per-topic-tone-calibration"></a>
 
 #### Per-Topic Tone Calibration
 

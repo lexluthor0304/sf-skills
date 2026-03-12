@@ -84,6 +84,8 @@ Before creating a Flow, ask:
 
 ---
 
+<a id="2-pre-development-planning"></a>
+
 ## 2. Pre-Development Planning
 
 Define business requirements and map logic **before** opening Flow Builder. Planning prevents rework and ensures stakeholder alignment.
@@ -316,6 +318,8 @@ Structure your flow elements in this sequence for maintainability:
 - **Debugging**: Errors trace back to predictable locations
 
 ---
+
+<a id="5-using-record-in-record-triggered-flows"></a>
 
 ## 5. Using $Record in Record-Triggered Flows
 
@@ -880,6 +884,8 @@ CMDT records are **metadata**, not data. This has important implications:
 
 ---
 
+<a id="12-three-tier-error-handling"></a>
+
 ## 12. Three-Tier Error Handling
 
 Implement comprehensive error handling at three levels:
@@ -923,6 +929,8 @@ Include context in every error message:
 ```
 
 ---
+
+<a id="13-multi-step-dml-rollback-strategy"></a>
 
 ## 13. Multi-Step DML Rollback Strategy
 

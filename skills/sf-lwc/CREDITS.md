@@ -18,13 +18,13 @@ Created by [Jag Valaiyapathy](https://github.com/Jaganpro)
 - [James Simone's Blog](https://www.jamessimone.net/) - Advanced LWC patterns
   - [Composable Modal Pattern](https://www.jamessimone.net/blog/joys-of-apex/lwc-composable-modal/)
   - [Advanced Jest Testing](https://www.jamessimone.net/blog/joys-of-apex/advanced-lwc-jest-testing/)
-  - [LWC Pagination](https://www.jamessimone.net/blog/joys-of-apex/lwc-pagination/)
+  - [Joys of Apex](https://www.jamessimone.net/blog/) - broader LWC implementation patterns
   - [Dynamic LWC Creation](https://www.jamessimone.net/blog/joys-of-apex/dynamic-lwc-creation/)
 - [LWC Recipes](https://github.com/trailheadapps/lwc-recipes) - Trailhead Apps (124+ component examples)
 
 ### SLDS 2 Dark Mode Resources
-- [SLDS 2 Blog Post](https://www.salesforce.com/blog/new-design-system/) - Salesforce official announcement
-- [SLDS 2 Trailhead Module](https://trailhead.salesforce.com/content/learn/modules/lightning-design-system) - Learn SLDS fundamentals
+- [SLDS 2 Transition Guide](https://www.lightningdesignsystem.com/2e1ef8501/p/8184ad-transition-to-slds-2) - SLDS 2 migration guidance
+- [SLDS Accessibility Overview](https://www.lightningdesignsystem.com/accessibility/overview/) - Accessibility guidance and foundations
 
 ### Spring '26 Release (API 66.0)
 - [9 Features for Salesforce Developers in Spring '26](https://www.salesforceben.com/9-features-for-salesforce-developers-in-the-spring-26-release/) - Salesforce Ben

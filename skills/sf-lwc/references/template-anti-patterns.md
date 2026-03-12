@@ -487,6 +487,8 @@ handleItemClick(event) {
 
 ---
 
+<a id="6-iteration-anti-patterns"></a>
+
 ## 6. Iteration Anti-Patterns
 
 ### ❌ BAD: Missing Key in Iteration
