@@ -57,8 +57,8 @@ These variables are resolved at runtime:
 
 | Variable | Resolves To | Example |
 |----------|-------------|---------|
-| `${SHARED_HOOKS}` | `~/.claude/plugins/marketplaces/sf-skills/shared/hooks` | Shared hook scripts |
-| `${SKILL_HOOKS}` | `~/.claude/plugins/marketplaces/sf-skills/<skill>/hooks/scripts` | Skill-specific scripts |
+| `${SHARED_HOOKS}` | `~/.claude/hooks` | Shared hook scripts |
+| `${SKILL_HOOKS}` | `~/.claude/skills/<skill>/hooks/scripts` | Skill-specific scripts |
 | `${CLAUDE_PLUGIN_ROOT}` | Current skill's root directory | Same as SKILL_HOOKS parent |
 
 ---
@@ -307,8 +307,8 @@ hooks:
 ### Path Resolution Issues
 
 1. Use absolute paths for debugging
-2. Check `${SHARED_HOOKS}` resolves to: `~/.claude/plugins/marketplaces/sf-skills/shared/hooks`
-3. Check `${SKILL_HOOKS}` resolves to: `~/.claude/plugins/marketplaces/sf-skills/<skill>/hooks/scripts`
+2. Check `${SHARED_HOOKS}` resolves to: `~/.claude/hooks`
+3. Check `${SKILL_HOOKS}` resolves to: `~/.claude/skills/<skill>/hooks/scripts`
 
 ---
 

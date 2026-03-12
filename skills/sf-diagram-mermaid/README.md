@@ -1,4 +1,4 @@
-# 📊 sf-diagram
+# 📊 sf-diagram-mermaid
 
 > Salesforce architecture diagram generation using Mermaid syntax with ASCII fallback
 
@@ -7,7 +7,7 @@
 
 ## Overview
 
-`sf-diagram` is a Claude Code skill that generates professional Salesforce architecture diagrams. It supports multiple diagram types using [Mermaid](https://mermaid.js.org/) syntax with ASCII art fallback for terminal compatibility.
+`sf-diagram-mermaid` is a Salesforce architecture diagram skill that generates professional diagrams using [Mermaid](https://mermaid.js.org/) syntax with ASCII art fallback for terminal compatibility.
 
 ## Features
 
@@ -23,13 +23,11 @@
 ## Installation
 
 ```bash
-# Clone to your Claude Code skills directory
-git clone https://github.com/Jaganpro/sf-skills sf-diagram
-```
+# Install as part of sf-skills
+npx skills add Jaganpro/sf-skills
 
-Or install via plugin:
-```
-/plugin install github:Jaganpro/sf-skills/sf-diagram
+# Or install just this skill
+npx skills add Jaganpro/sf-skills --skill sf-diagram-mermaid
 ```
 
 ## Quick Start

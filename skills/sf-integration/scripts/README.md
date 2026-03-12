@@ -13,7 +13,7 @@ Automation scripts for configuring Salesforce integrations without manual UI ste
 
 ```bash
 # Enhanced Named Credentials (recommended for production)
-./configure-named-credential.sh <org-alias>
+./configure-named-credential.sh <external-credential-name> <principal-name> <org-alias>
 
 # Custom Settings (legacy, for dev/test)
 ./set-api-credential.sh <setting-name> - <org-alias>
@@ -31,7 +31,7 @@ Automation scripts for configuring Salesforce integrations without manual UI ste
 
 ```bash
 # Interactive mode - prompts for API key securely
-./configure-named-credential.sh MyDevOrg
+./configure-named-credential.sh VisualCrossingWeather weatherAPIKey MyDevOrg
 
 # The script will:
 # 1. Validate org connection
@@ -52,7 +52,7 @@ Automation scripts for configuring Salesforce integrations without manual UI ste
 
 ## Templates
 
-The `assets/` directory contains customizable scripts for new integrations:
+The `templates/` directory contains customizable scripts for new integrations:
 
 | Template | Purpose |
 |----------|---------|
@@ -62,7 +62,7 @@ The `assets/` directory contains customizable scripts for new integrations:
 
 ```bash
 # Copy template for your integration
-cp assets/setup-credentials-with-csp.sh my-integration-setup.sh
+cp templates/setup-credentials-with-csp.sh my-integration-setup.sh
 
 # Edit configuration variables
 # - SKILL_NAME

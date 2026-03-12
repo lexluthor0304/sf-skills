@@ -490,7 +490,7 @@ See [CREDITS.md](CREDITS.md) for acknowledgments of community resources that sha
 **Required**: Target org with `sf` CLI authenticated
 **Recommended**: sf-apex (for auto-fix), sf-testing (for reproduction), sf-deploy (for deploying fixes)
 
-Install: `/plugin install github:Jaganpro/sf-skills/sf-debug`
+Install: `npx skills add Jaganpro/sf-skills --skill sf-debug`
 
 ---
 

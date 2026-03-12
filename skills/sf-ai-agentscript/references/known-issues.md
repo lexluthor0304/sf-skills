@@ -677,6 +677,8 @@
 
 ## Resolved Issues
 
+<a id="issue-16"></a>
+
 ### Issue 16: `connections:` (plural) wrapper block not valid — use `connection messaging:` (singular)
 - **Status**: RESOLVED
 - **Date Discovered**: 2026-02-16

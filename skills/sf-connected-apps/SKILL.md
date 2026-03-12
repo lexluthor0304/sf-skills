@@ -66,8 +66,8 @@ Expert in creating and managing Salesforce Connected Apps and External Client Ap
 ### Phase 3: Template Selection & Generation
 
 **Template Locations** (try in order):
-1. `~/.claude/plugins/marketplaces/sf-skills/sf-connected-apps/assets/[template]`
-2. `[project-root]/sf-connected-apps/assets/[template]`
+1. `~/.claude/skills/sf-connected-apps/assets/[template]`
+2. `[project-root]/skills/sf-connected-apps/assets/[template]`
 
 **Template Selection**:
 

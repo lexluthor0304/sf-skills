@@ -78,8 +78,8 @@ sf-data requires objects deployed to org. Always deploy BEFORE creating test dat
 | Validation Rule / Record Type / Layout | `assets/[type]/` |
 
 **Template Path Resolution** (try in order):
-1. Marketplace: `~/.claude/plugins/marketplaces/sf-skills/sf-metadata/assets/[path]`
-2. Project: `[project-root]/sf-metadata/assets/[path]`
+1. Installed skill: `~/.claude/skills/sf-metadata/assets/[path]`
+2. Project: `[project-root]/skills/sf-metadata/assets/[path]`
 
 #### For Querying (sf CLI v2)
 
@@ -190,7 +190,7 @@ Verify in Setup → Object Manager, check FLS for new fields, add to Page Layout
 ## Validation
 
 ```bash
-python3 ~/.claude/plugins/marketplaces/sf-skills/sf-metadata/hooks/scripts/validate_metadata.py <file_path>
+python3 ~/.claude/skills/sf-metadata/hooks/scripts/validate_metadata.py <file_path>
 ```
 
 **Scoring**: 120 points / 6 categories. Minimum 84 (70%) for deployment.

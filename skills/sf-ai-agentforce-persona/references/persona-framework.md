@@ -468,6 +468,8 @@ When the agent's surface is a voice channel (phone, voice assistant, IVR), defin
 
 These parameters are only relevant for voice surfaces and should be omitted for text-based agents.
 
+<a id="skill-level-adaptation"></a>
+
 ### Skill-Level Adaptation *(optional)*
 
 When the agent's audience spans multiple expertise levels, the agent may need to adapt its language complexity and explanation depth to the user's demonstrated skill level. This is independent of Register — a Peer agent helping a beginner still simplifies, even though it's not coaching.

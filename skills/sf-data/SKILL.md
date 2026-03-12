@@ -89,8 +89,8 @@ See `references/orchestration.md` for the 251-record pattern and cleanup sequenc
 **Phase 1: Gather** → Ask the user (operation type, object, org alias, record count) | Check existing: `Glob: **/*factory*.apex`
 
 **Phase 2: Template** → Select from `assets/` folder (factories/, bulk/, soql/, cleanup/)
-- Marketplace: `~/.claude/plugins/marketplaces/sf-skills/sf-data/assets/`
-- Project: `[project-root]/sf-data/assets/`
+- Installed skill: `~/.claude/skills/sf-data/assets/`
+- Project: `[project-root]/skills/sf-data/assets/`
 
 **Phase 3: Execute** → Run sf CLI command | Capture JSON output | Track record IDs
 
@@ -304,14 +304,14 @@ See [Salesforce Governor Limits](https://developer.salesforce.com/docs/atlas.en-
 **Docs**: `references/` folder (in sf-data) - soql-relationship-guide, bulk-operations-guide, test-data-patterns, cleanup-rollback-guide
 
 **Templates**: `assets/factories/` (Account, Contact, Opportunity, hierarchy) | `assets/soql/` (parent-child, polymorphic) | `assets/bulk/` | `assets/cleanup/`
-- **Path**: `~/.claude/plugins/marketplaces/sf-skills/sf-data/assets/[subfolder]/`
+- **Path**: `~/.claude/skills/sf-data/assets/[subfolder]/`
 
 ---
 
 ## Dependencies
 
 - **sf-metadata** (optional): Query object/field structure before operations
-  - Install: `/plugin install github:Jaganpro/sf-skills/sf-metadata`
+  - Install: `npx skills add Jaganpro/sf-skills --skill sf-metadata`
 - **sf CLI v2** (required): All data operations use sf CLI
   - Install: `npm install -g @salesforce/cli`
 

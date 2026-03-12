@@ -166,6 +166,8 @@ Phase E: Observability Integration (STDM analysis)
 
 ---
 
+<a id="phase-0-prerequisites--agent-discovery"></a>
+
 ## Phase 0: Prerequisites & Agent Discovery
 
 **Ask the user** to gather agent name, org alias, and test type. Then:

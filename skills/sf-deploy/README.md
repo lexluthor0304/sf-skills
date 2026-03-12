@@ -14,10 +14,10 @@ Comprehensive Salesforce DevOps automation using sf CLI v2. Deploy metadata, man
 
 ```bash
 # Install as part of sf-skills
-claude /plugin install github:Jaganpro/sf-skills
+npx skills add Jaganpro/sf-skills
 
-# Or install standalone
-claude /plugin install github:Jaganpro/sf-skills/sf-deploy
+# Or install just this skill
+npx skills add Jaganpro/sf-skills --skill sf-deploy
 ```
 
 ## Quick Start

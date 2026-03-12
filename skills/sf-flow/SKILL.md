@@ -20,7 +20,7 @@ Expert Salesforce Flow Builder with deep knowledge of best practices, bulkificat
 ## Quick Reference: Validation Script
 
 ```bash
-python3 ~/.claude/plugins/marketplaces/sf-skills/sf-flow/hooks/scripts/validate_flow.py <flow-file.xml>
+python3 ~/.claude/skills/sf-flow/hooks/scripts/validate_flow.py <flow-file.xml>
 ```
 
 **Scoring**: 110 points across 6 categories. Minimum 88 (80%) for deployment.

@@ -3,7 +3,7 @@
 
 How the Agentforce platform processes each user message internally, based on live Builder trace captures. Maps AgentScript syntax to the 13 real-time trace step types.
 
-> **Visual version**: See [~/.agent/diagrams/agent-execution-lifecycle.html](~/.agent/diagrams/agent-execution-lifecycle.html) for the interactive HTML explainer with Mermaid flowcharts, timing bars, and side-by-side script-to-trace mapping.
+> **Visual version**: Generated runtime artifact at `~/.agent/diagrams/agent-execution-lifecycle.html` with Mermaid flowcharts, timing bars, and side-by-side script-to-trace mapping.
 
 > **Data source**: Live Builder traces from a test agent, sandbox org, 2026-02-25.
 

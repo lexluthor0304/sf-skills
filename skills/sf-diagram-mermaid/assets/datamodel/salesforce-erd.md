@@ -56,7 +56,7 @@ Use `flowchart LR` (left-to-right) for data model diagrams. This format supports
 Enrich diagrams with live org data:
 
 ```bash
-python3 ~/.claude/plugins/marketplaces/sf-skills/sf-diagram-mermaid/scripts/query-org-metadata.py \
+python3 ~/.claude/skills/sf-diagram-mermaid/scripts/query-org-metadata.py \
     --objects Account,Contact,Opportunity,Case \
     --target-org myorg
 ```

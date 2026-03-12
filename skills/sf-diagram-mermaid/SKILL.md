@@ -69,13 +69,12 @@ Expert diagram creator specializing in Salesforce architecture visualization. Ge
 | Agentforce Flow | `agentforce/agent-flow.md` |
 
 **Template Path Resolution** (try in order):
-1. **Marketplace folder** (always available): `~/.claude/plugins/marketplaces/sf-skills/sf-diagram-mermaid/assets/[template]`
-2. **Project folder** (if working in sf-skills repo): `[project-root]/sf-diagram-mermaid/assets/[template]`
-3. **Cache folder** (if installed individually): `~/.claude/plugins/cache/sf-diagram-mermaid/*/sf-diagram-mermaid/assets/[template]`
+1. **Installed skill folder**: `~/.claude/skills/sf-diagram-mermaid/assets/[template]`
+2. **Project folder** (if working in sf-skills repo): `[project-root]/skills/sf-diagram-mermaid/assets/[template]`
 
 **Example**: To load JWT Bearer template:
 ```
-Read: ~/.claude/plugins/marketplaces/sf-skills/sf-diagram-mermaid/assets/oauth/jwt-bearer.md
+Read: ~/.claude/skills/sf-diagram-mermaid/assets/oauth/jwt-bearer.md
 ```
 
 ### Phase 3: Data Collection
@@ -235,7 +234,7 @@ When using the flowchart-based ERD format, objects are color-coded by type:
 For orgs with large datasets, query record counts and display LDV indicators:
 
 ```bash
-python3 ~/.claude/plugins/marketplaces/sf-skills/sf-diagram-mermaid/scripts/query-org-metadata.py \
+python3 ~/.claude/skills/sf-diagram-mermaid/scripts/query-org-metadata.py \
     --objects Account,Contact,Opportunity \
     --target-org myorg
 ```

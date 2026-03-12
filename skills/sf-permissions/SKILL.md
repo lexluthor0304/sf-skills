@@ -80,7 +80,7 @@ sf = get_sf_connection('myorg')  # or None for default
 ### 3.1 Permission Hierarchy Viewer
 
 ```bash
-cd ~/.claude/plugins/marketplaces/sf-skills/sf-permissions/scripts
+cd ~/.claude/skills/sf-permissions/scripts
 python cli.py hierarchy [--target-org ALIAS] [--format ascii|mermaid]
 ```
 

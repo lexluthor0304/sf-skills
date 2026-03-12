@@ -52,15 +52,15 @@ The rise of agentic AI tools has made it trivially easy to mass-generate "contri
 
 ```bash
 # Fork the repository on GitHub, then:
-git clone https://github.com/your-github-username/sf-skills.git
+git clone https://github.com/Jaganpro/sf-skills.git
 cd sf-skills
 ```
 
-### 2. Install for Development
+### 2. Test Locally
 
 ```bash
-# Install as a plugin for testing
-/plugin install .
+# Preview installer behavior from your local clone
+python3 tools/install.py --dry-run
 ```
 
 ### 3. Create a Branch
@@ -166,8 +166,7 @@ Fixes #456
 ### 1. Ensure Quality
 
 - [ ] All validation scripts pass
-- [ ] Documentation is updated
-- [ ] CHANGELOG.md is updated (for features/fixes)
+- [ ] Relevant documentation is updated (README, SKILL.md, references/)
 - [ ] Version numbers bumped appropriately (if applicable)
 - [ ] Commits follow commit message format
 
@@ -196,8 +195,7 @@ Describe testing performed
 
 ## Checklist
 - [ ] Validated with bulk_validate.py
-- [ ] Updated documentation
-- [ ] Updated CHANGELOG.md
+- [ ] Updated relevant documentation
 - [ ] Tested manually
 - [ ] No breaking changes (or documented)
 
@@ -280,7 +278,7 @@ Mockups, examples, related projects, etc.
 - **README.md**: Overview, installation, quick start
 - **SKILL.md**: Skill-specific detailed instructions
 - **references/**: Extended guides, tutorials, and examples
-- **CHANGELOG.md**: Version history
+- **Git history / releases**: Version history and change tracking
 
 ## 🎯 Skill Versioning
 
@@ -304,7 +302,7 @@ PATCH: Bug fixes, documentation updates, minor improvements
 
 **Do NOT open public issues for security vulnerabilities.**
 
-Email security concerns to: [YOUR_EMAIL]
+Contact the maintainer privately via GitHub: https://github.com/Jaganpro
 
 Include:
 - Description of vulnerability
@@ -338,15 +336,15 @@ Project maintainers will enforce these standards and may remove, edit, or reject
 
 ## ❓ Questions?
 
-- Open a [GitHub Discussion](https://github.com/your-github-username/claude-code-salesforce-skills/discussions)
-- Check existing [Issues](https://github.com/your-github-username/claude-code-salesforce-skills/issues)
+- Check existing [Issues](https://github.com/Jaganpro/sf-skills/issues)
+- Open a new issue if needed: [GitHub Issues](https://github.com/Jaganpro/sf-skills/issues)
 - Review the [README](README.md)
 
 ## 🙏 Recognition
 
 Contributors will be acknowledged in:
 - README.md Contributors section
-- CHANGELOG.md for specific contributions
+- GitHub release notes and commit history for specific contributions
 - GitHub Contributors page
 
 Thank you for contributing! 🎉

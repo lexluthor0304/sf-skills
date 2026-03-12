@@ -16,6 +16,8 @@ Comprehensive guide to debugging Apex code, LSP validation, dependency managemen
 
 ---
 
+<a id="lsp-based-validation-auto-fix-loop"></a>
+
 ## LSP-Based Validation (Auto-Fix Loop)
 
 The sf-apex skill includes Language Server Protocol (LSP) integration for real-time syntax validation. This enables Claude to automatically detect and fix Apex syntax errors during code authoring.
@@ -170,6 +172,8 @@ sf project deploy start --metadata ApexClass:MyClass --target-org <alias> --dry-
 ```
 
 ---
+
+<a id="cross-skill-dependency-checklist"></a>
 
 ## Cross-Skill Dependency Checklist
 

@@ -13,10 +13,10 @@ AI-powered visual content generation for Salesforce development. Generate ERD di
 
 ```bash
 # Install as part of sf-skills
-claude /plugin install github:Jaganpro/sf-skills
+npx skills add Jaganpro/sf-skills
 
-# Or install standalone
-claude /plugin install github:Jaganpro/sf-skills/sf-diagram-nanobananapro
+# Or install just this skill
+npx skills add Jaganpro/sf-skills --skill sf-diagram-nanobananapro
 ```
 
 ## Prerequisites
@@ -24,7 +24,7 @@ claude /plugin install github:Jaganpro/sf-skills/sf-diagram-nanobananapro
 **IMPORTANT**: Run the prerequisites check before using this skill:
 
 ```bash
-~/.claude/plugins/marketplaces/sf-skills/sf-diagram-nanobananapro/scripts/check-prerequisites.sh
+~/.claude/skills/sf-diagram-nanobananapro/scripts/check-prerequisites.sh
 ```
 
 | Requirement | Description | How to Get |

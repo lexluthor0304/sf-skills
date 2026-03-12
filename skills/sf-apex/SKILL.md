@@ -59,10 +59,10 @@ Expert Apex developer specializing in clean code, SOLID principles, and 2025 bes
 | Standard Class | `assets/apex-class.cls` |
 
 **Template Path Resolution** (try in order):
-1. **Marketplace folder**: `~/.claude/plugins/marketplaces/sf-skills/sf-apex/assets/[template]`
-2. **Project folder**: `[project-root]/sf-apex/assets/[template]`
+1. **Installed skill folder**: `~/.claude/skills/sf-apex/assets/[template]`
+2. **Project folder**: `[project-root]/skills/sf-apex/assets/[template]`
 
-**Example**: `Read: ~/.claude/plugins/marketplaces/sf-skills/sf-apex/assets/apex-class.cls`
+**Example**: `Read: ~/.claude/skills/sf-apex/assets/apex-class.cls`
 
 ---
 
@@ -440,13 +440,13 @@ For LSP validation to work, users must have:
 | `triangle-pattern.md` | Flow-LWC-Apex integration |
 | `llm-anti-patterns.md` | **NEW**: Common LLM code generation mistakes (Java types, non-existent methods, Map patterns) |
 
-**Path**: `~/.claude/plugins/marketplaces/sf-skills/sf-apex/references/`
+**Path**: `~/.claude/skills/sf-apex/references/`
 
 ---
 
 ## Dependencies
 
-**All optional**: sf-deploy, sf-metadata, sf-data. Install: `/plugin install github:Jaganpro/sf-skills/[skill-name]`
+**All optional**: sf-deploy, sf-metadata, sf-data. Install with `npx skills add Jaganpro/sf-skills --skill [skill-name]`
 
 ---
 

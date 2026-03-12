@@ -21,7 +21,7 @@ Pre-built data model for Salesforce Collaborative Forecasts using `flowchart LR`
 Enrich diagram with live org data:
 
 ```bash
-python3 ~/.claude/plugins/marketplaces/sf-skills/sf-diagram-mermaid/scripts/query-org-metadata.py \
+python3 ~/.claude/skills/sf-diagram-mermaid/scripts/query-org-metadata.py \
     --objects ForecastingItem,ForecastingQuota,Opportunity,OpportunitySplit \
     --target-org myorg
 ```

@@ -14,12 +14,12 @@ Salesforce data operations skill for Claude Code. Provides SOQL expertise, test 
 ## Installation
 
 ```bash
-/plugin install github:Jaganpro/sf-skills/sf-data
+npx skills add Jaganpro/sf-skills --skill sf-data
 ```
 
 Or install the complete sf-skills suite:
 ```bash
-/plugin install github:Jaganpro/sf-skills
+npx skills add Jaganpro/sf-skills
 ```
 
 ## Usage

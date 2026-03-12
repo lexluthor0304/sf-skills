@@ -16,10 +16,10 @@ Creates comprehensive Salesforce integrations with 120-point scoring. Build secu
 
 ```bash
 # Install as part of sf-skills
-claude /plugin install github:Jaganpro/sf-skills
+npx skills add Jaganpro/sf-skills
 
-# Or install standalone
-claude /plugin install github:Jaganpro/sf-skills/sf-integration
+# Or install just this skill
+npx skills add Jaganpro/sf-skills --skill sf-integration
 ```
 
 ## Quick Start

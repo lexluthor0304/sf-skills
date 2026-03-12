@@ -18,7 +18,7 @@ sf agent test list --target-org [alias]
 # ❌ "INVALID_TYPE: Cannot use: AiEvaluationDefinition in this organization"
 ```
 
-See [SKILL.md](../SKILL.md#-critical-org-requirements-agent-testing-center) for enabling this feature.
+See [SKILL.md](../SKILL.md#phase-0-prerequisites--agent-discovery) for prerequisites and enablement guidance.
 
 ---
 
@@ -191,6 +191,8 @@ sf agent test run --api-name MyAgentTest --wait 15 --result-format json --output
 # Run with verbose output
 sf agent test run --api-name MyAgentTest --wait 10 --verbose --target-org dev
 ```
+
+<a id="verbose-output---verbose"></a>
 
 ### Verbose Output (`--verbose`)
 

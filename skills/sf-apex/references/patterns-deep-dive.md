@@ -156,6 +156,8 @@ sf project deploy start --metadata CustomMetadata:Trigger_Action.TA_Lead_Calcula
 
 ---
 
+<a id="standard-trigger-pattern"></a>
+
 ### Standard Trigger Pattern (No Package Required)
 
 **Use this when TAF package is NOT installed in the target org:**

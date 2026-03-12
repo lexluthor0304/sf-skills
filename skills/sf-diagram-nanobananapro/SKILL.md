@@ -23,7 +23,7 @@ Gemini CLI with Nano Banana Pro extension.
 **Before using this skill, ALWAYS run the prerequisites check first:**
 
 ```bash
-~/.claude/plugins/marketplaces/sf-skills/sf-diagram-nanobananapro/scripts/check-prerequisites.sh
+~/.claude/skills/sf-diagram-nanobananapro/scripts/check-prerequisites.sh
 ```
 
 **If the check fails, DO NOT invoke this skill.** The user must fix the missing prerequisites first.

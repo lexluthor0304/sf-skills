@@ -15,10 +15,10 @@ Salesforce debugging and troubleshooting skill with log analysis, governor limit
 
 ```bash
 # Install as part of sf-skills
-claude /plugin install github:Jaganpro/sf-skills
+npx skills add Jaganpro/sf-skills
 
-# Or install standalone
-claude /plugin install github:Jaganpro/sf-skills/sf-debug
+# Or install just this skill
+npx skills add Jaganpro/sf-skills --skill sf-debug
 ```
 
 ## Quick Start
