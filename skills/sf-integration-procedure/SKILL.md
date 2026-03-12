@@ -1,6 +1,3 @@
-<!-- ABOUTME: OmniStudio Integration Procedure creation skill with 110-point scoring validation. -->
-<!-- ABOUTME: Orchestrates Data Mapper actions, Remote Actions, HTTP callouts, and conditional logic. -->
-
 ---
 name: sf-integration-procedure
 description: >
@@ -19,7 +16,7 @@ metadata:
   scoring: "110 points across 6 categories"
 ---
 
-# OmniStudio Integration Procedure Creation and Validation
+# sf-integration-procedure: OmniStudio Integration Procedure Creation and Validation
 
 Expert OmniStudio Integration Procedure (IP) builder with deep knowledge of server-side process orchestration. Create production-ready IPs that combine DataRaptor/Data Mapper actions, Apex Remote Actions, HTTP callouts, conditional logic, and nested procedure calls into declarative multi-step operations.
 

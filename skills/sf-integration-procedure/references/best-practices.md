@@ -1,6 +1,4 @@
 <!-- Parent: sf-integration-procedure/SKILL.md -->
-<!-- ABOUTME: Best practices guide for OmniStudio Integration Procedure design and implementation. -->
-<!-- ABOUTME: Covers element ordering, error handling, caching, performance, and tool selection. -->
 
 # Integration Procedure Best Practices
 

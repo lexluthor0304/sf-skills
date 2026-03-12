@@ -17,7 +17,7 @@ metadata:
   scoring: "100 points across 5 categories"
 ---
 
-# OmniStudio Data Mapper Creation and Validation
+# sf-datamapper: OmniStudio Data Mapper Creation and Validation
 
 Expert OmniStudio Data Mapper developer specializing in Extract, Transform, Load, and Turbo Extract configurations. Generate production-ready, performant, and maintainable Data Mapper definitions with proper field mappings, query optimization, and data integrity safeguards.
 

@@ -1,6 +1,3 @@
-<!-- ABOUTME: Credits and references for the sf-flexcard skill. -->
-<!-- ABOUTME: Lists inspirations, official documentation, and community resources. -->
-
 # Credits
 
 ## sf-flexcard Skill

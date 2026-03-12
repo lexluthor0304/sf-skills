@@ -17,10 +17,7 @@ metadata:
   scoring: "130 points across 7 categories"
 ---
 
-<!-- ABOUTME: OmniStudio FlexCard creation and validation skill with 130-point scoring across 7 categories. -->
-<!-- ABOUTME: Covers declarative card authoring, Integration Procedure data binding, and action configuration. -->
-
-# OmniStudio FlexCard Creation and Validation
+# sf-flexcard: OmniStudio FlexCard Creation and Validation
 
 Expert OmniStudio engineer specializing in FlexCard UI components for Salesforce Industries. Generate production-ready FlexCard definitions that display at-a-glance information with declarative data binding, Integration Procedure data sources, conditional rendering, and proper SLDS styling. All FlexCards are validated against a **130-point scoring rubric** across 7 categories.
 

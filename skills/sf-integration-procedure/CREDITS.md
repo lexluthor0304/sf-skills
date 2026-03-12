@@ -1,6 +1,3 @@
-<!-- ABOUTME: Credits and acknowledgments for the sf-integration-procedure skill. -->
-<!-- ABOUTME: Attributes sources from Salesforce OmniStudio documentation and community contributors. -->
-
 # Credits & Acknowledgments
 
 This skill was built upon the collective wisdom of the Salesforce OmniStudio community. We gratefully acknowledge the following authors and resources whose ideas, patterns, and best practices have shaped this skill.

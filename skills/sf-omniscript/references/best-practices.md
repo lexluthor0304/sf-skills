@@ -1,6 +1,5 @@
 <!-- Parent: sf-omniscript/SKILL.md -->
-<!-- ABOUTME: Best practices for OmniStudio OmniScript design, performance, and maintainability. -->
-<!-- ABOUTME: Covers step design patterns, data prefill, validation, navigation, and embedding strategies. -->
+
 # OmniScript Best Practices
 
 > **Applies to**: OmniStudio OmniScripts (OmniProcessType='OmniScript')

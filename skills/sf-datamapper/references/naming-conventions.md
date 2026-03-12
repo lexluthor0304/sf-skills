@@ -1,6 +1,4 @@
 <!-- Parent: sf-datamapper/SKILL.md -->
-<!-- ABOUTME: Naming conventions for OmniStudio Data Mapper (formerly DataRaptor) configurations. -->
-<!-- ABOUTME: Defines type prefixes, object naming, and field mapping naming patterns. -->
 
 # Data Mapper Naming Conventions
 

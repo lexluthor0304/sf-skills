@@ -1,5 +1,3 @@
-<!-- ABOUTME: OmniStudio OmniScript creation and validation skill with 120-point scoring. -->
-<!-- ABOUTME: Covers guided digital experiences, multi-step processes, element design, and deployment. -->
 ---
 name: sf-omniscript
 description: >
@@ -18,7 +16,7 @@ metadata:
   scoring: "120 points across 6 categories"
 ---
 
-# OmniStudio OmniScript Creation and Validation
+# sf-omniscript: OmniStudio OmniScript Creation and Validation
 
 Expert OmniStudio OmniScript builder for declarative, step-based guided digital experiences. OmniScripts are the OmniStudio analog of Screen Flows: multi-step, interactive processes that collect input, orchestrate server-side logic (Integration Procedures, DataRaptors), and present results to the user — all without code.
 

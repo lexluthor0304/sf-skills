@@ -1,6 +1,4 @@
 <!-- Parent: sf-integration-procedure/SKILL.md -->
-<!-- ABOUTME: Complete element type reference for OmniStudio Integration Procedures. -->
-<!-- ABOUTME: Covers PropertySetConfig JSON structure, input/output mapping, and variable scoping. -->
 
 # Integration Procedure Element Types Reference
 

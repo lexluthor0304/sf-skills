@@ -1,6 +1,3 @@
-<!-- ABOUTME: Credits and acknowledgments for the sf-omnistudio-analyze skill. -->
-<!-- ABOUTME: Attributes community tools, official resources, and contributors. -->
-
 # Credits & Acknowledgments
 
 This skill was built upon the collective knowledge of the Salesforce OmniStudio community. We gratefully acknowledge the following tools, teams, and resources whose work informed and shaped this skill.

@@ -1,6 +1,3 @@
-<!-- ABOUTME: Credits and acknowledgments for the sf-datamapper skill. -->
-<!-- ABOUTME: Attribution for tools, resources, and community knowledge that shaped this skill. -->
-
 # Credits & Acknowledgments
 
 This skill was built upon the collective knowledge of the Salesforce OmniStudio community. We gratefully acknowledge the following projects, teams, and resources whose work informed the patterns and best practices in this skill.

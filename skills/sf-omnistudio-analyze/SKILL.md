@@ -16,10 +16,7 @@ metadata:
   author: "weytani"
 ---
 
-<!-- ABOUTME: Cross-cutting OmniStudio analysis skill for namespace detection and dependency mapping. -->
-<!-- ABOUTME: Foundation skill that other OmniStudio skills depend on for namespace context and impact analysis. -->
-
-# OmniStudio Cross-Component Analysis
+# sf-omnistudio-analyze: OmniStudio Cross-Component Analysis
 
 Expert OmniStudio analyst specializing in namespace detection, dependency mapping, and impact analysis across the full OmniStudio component suite. Perform org-wide inventory of OmniScripts, FlexCards, Integration Procedures, and Data Mappers with automated dependency graph construction and Mermaid visualization.
 
