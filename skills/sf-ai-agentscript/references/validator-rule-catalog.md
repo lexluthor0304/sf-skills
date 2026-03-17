@@ -113,6 +113,7 @@
 | `ASV-RUN-017` | Warning | Service Agent `@context.*` sources | Warns on linked `@context.*` sources in Service Agent files because support is surface-dependent. |
 | `ASV-RUN-018` | Warning | Escalation fallback heuristic | Warns when `@utils.escalate` is present without an obvious fallback / latch pattern. |
 | `ASV-RUN-019` | Warning | Large-file parser risk | Warns when line/topic/action counts cross heuristic complexity thresholds. |
+| `ASV-RUN-020` | Blocking | Output `filter_from_agent` + `is_used_by_planner` conflict | Errors when an action output field declares both `filter_from_agent` and `is_used_by_planner`. These are mutually exclusive visibility controls; the combination causes `InvalidFormatError` and cascading `ACTION_NOT_IN_SCOPE` failures that make the entire action invisible to `before_reasoning` and `reasoning` blocks. |
 
 ---
 

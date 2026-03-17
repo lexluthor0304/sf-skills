@@ -715,6 +715,33 @@
 - **Note**: `outboundRouteName` in compiled XML does NOT need the `flow://` prefix — the publisher strips it during compilation. Both forms work in production XML.
 - **Validated on**: Production org, 2026-02-16
 
+### Issue 40: `filter_from_agent` + `is_used_by_planner` on same output — `InvalidFormatError` with cascade
+
+- **Status**: WORKAROUND
+- **Severity**: High (Blocking)
+- **Discovered**: 2026-03-17
+- **Affects**: All Agent Script action output field declarations
+- **Symptom**: Output fields that declare both `filter_from_agent` and `is_used_by_planner` produce `InvalidFormatError` with the message: _"Remove the 'is_used_by_planner' field and use only 'filter_from_agent'."_ More critically, this **invalidates the entire action definition**, causing cascading `ACTION_NOT_IN_SCOPE` errors everywhere the action is referenced — in `before_reasoning:` `run @actions.X` calls and `reasoning.actions:` invocations. The cascade makes the root cause very hard to diagnose because the error appears on action _references_, not on the offending output field.
+- **Root Cause**: `filter_from_agent` and `is_used_by_planner` are mutually exclusive output visibility controls. When both are present, the Agent Script parser rejects the output field, which poisons the entire action definition and makes it invisible to all scopes.
+- **Cascade Pattern**: One invalid output field on a shared action (e.g., `update_session` reused across topics) can trigger `ACTION_NOT_IN_SCOPE` errors in every topic that references it — often 4-6+ errors from a single root cause.
+- **Workaround**: Use only `filter_from_agent: True` on outputs that should be hidden from the customer. Remove `is_used_by_planner` from those fields entirely. The planner can still reason about the output via `set @variables.X = @outputs.Y` bindings in reasoning actions.
+- **Example**:
+  ```yaml
+  # ❌ WRONG — causes InvalidFormatError + cascade
+  outputs:
+     caseId: string
+        filter_from_agent: True
+        is_used_by_planner: False
+
+  # ✅ CORRECT — filter_from_agent alone
+  outputs:
+     caseId: string
+        filter_from_agent: True
+  ```
+- **Validator Rule**: `ASV-RUN-020` (Blocking)
+- **Real-world impact**: Observed in a production agent — 6 output fields across 5 topics caused 4 cascading `ACTION_NOT_IN_SCOPE` errors that blocked publish.
+- **Validated on**: Production sandbox, 2026-03-17
+
 ---
 
 ## Contributing

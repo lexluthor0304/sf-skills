@@ -450,6 +450,11 @@ class AgentScriptValidator:
                 lifecycle_block = None
 
             if current_io_field and indent <= current_io_field["indent"]:
+                # Check filter_from_agent + is_used_by_planner conflict before closing
+                if current_io_field.get("has_filter_from_agent") and current_io_field.get("has_is_used_by_planner") and current_action:
+                    current_action["filter_planner_conflict_lines"].append(
+                        (current_io_field["is_used_by_planner_line"], current_io_field["name"], current_io_field["section"])
+                    )
                 current_io_field = None
 
             if current_io and indent <= current_io["indent"]:
@@ -657,6 +662,7 @@ class AgentScriptValidator:
                                     "date_io_lines": [],
                                     "require_user_confirmation_lines": [],
                                     "reserved_io_field_lines": [],
+                                    "filter_planner_conflict_lines": [],
                                 }
                                 inline = remainder.strip()
                                 if inline.startswith("@utils.transition"):
@@ -718,6 +724,10 @@ class AgentScriptValidator:
                                         "indent": indent,
                                         "section": current_io["name"],
                                         "line": i,
+                                        "has_filter_from_agent": False,
+                                        "has_is_used_by_planner": False,
+                                        "filter_from_agent_line": None,
+                                        "is_used_by_planner_line": None,
                                     }
                                     current_action["io_fields"].append(current_io_field.copy())
                                     if field_type == "date":
@@ -731,6 +741,12 @@ class AgentScriptValidator:
                                     current_action["prompt_output_display_lines"].append((i, current_io_field["name"]))
                                 if stripped.startswith("is_required:") and self._clean_scalar_value(stripped.split(":", 1)[1].strip()) == "True":
                                     current_action["required_input_lines"].append((i, current_io_field["name"]))
+                                if stripped.startswith("filter_from_agent:"):
+                                    current_io_field["has_filter_from_agent"] = True
+                                    current_io_field["filter_from_agent_line"] = i
+                                if stripped.startswith("is_used_by_planner:"):
+                                    current_io_field["has_is_used_by_planner"] = True
+                                    current_io_field["is_used_by_planner_line"] = i
                                 continue
 
                         if current_action["kind"] == "utility_transition":
@@ -760,6 +776,11 @@ class AgentScriptValidator:
                         self.topic_inline_system_lines.append((i, current_block_name or current_top))
                         continue
 
+        # Check last IO field for filter/planner conflict before flush
+        if current_io_field and current_io_field.get("has_filter_from_agent") and current_io_field.get("has_is_used_by_planner") and current_action:
+            current_action["filter_planner_conflict_lines"].append(
+                (current_io_field["is_used_by_planner_line"], current_io_field["name"], current_io_field["section"])
+            )
         self._flush_action(current_action)
         if current_connection:
             self.connection_blocks.append(current_connection)
@@ -797,6 +818,7 @@ class AgentScriptValidator:
         self._check_confirmation_runtime_gap()
         self._check_prompt_output_displayability()
         self._check_date_type_in_action_io()
+        self._check_filter_planner_conflict()
         self._check_is_required_advisories()
         self._check_invalid_else_if()
         self._check_nested_if_blocks()
@@ -1273,6 +1295,15 @@ class AgentScriptValidator:
                     line,
                     f"Field '{field_name}' uses 'date' in action {section}. Runtime support is unreliable; prefer 'object' with complex_data_type_name: \"lightning__dateType\" for action I/O.",
                     "ASV-RUN-006",
+                )
+
+    def _check_filter_planner_conflict(self):
+        for action in self.action_definitions:
+            for line, field_name, section in action.get("filter_planner_conflict_lines", []):
+                self._add_error(
+                    line,
+                    f"Output '{field_name}' in action '{action['name']}' has both 'filter_from_agent' and 'is_used_by_planner'. These are mutually exclusive — remove 'is_used_by_planner' and use only 'filter_from_agent'. This causes InvalidFormatError and cascading ACTION_NOT_IN_SCOPE failures.",
+                    "ASV-RUN-020",
                 )
 
     def _check_is_required_advisories(self):
@@ -1771,6 +1802,7 @@ class AgentScriptValidator:
             self._checklist_entry("Runtime gotchas", "Confirmation dialog reliability", ["ASV-RUN-013"], success_detail="No risky require_user_confirmation usage detected.", na_detail="No target-backed action definitions detected.", applicable=bool(self.action_definitions), confidence="Runtime gap"),
             self._checklist_entry("Runtime gotchas", "Prompt output displayability", ["ASV-RUN-005"], success_detail="Prompt outputs avoid risky displayability settings.", na_detail="No prompt targets detected.", applicable=prompt_targets_present, confidence="Runtime gotcha"),
             self._checklist_entry("Runtime gotchas", "Action I/O date typing", ["ASV-RUN-006"], success_detail="No risky 'date' action I/O declarations detected.", na_detail="No action I/O declarations detected.", applicable=bool(self.action_definitions), confidence="Runtime gotcha"),
+            self._checklist_entry("Runtime gotchas", "Output visibility conflict", ["ASV-RUN-020"], success_detail="No filter_from_agent + is_used_by_planner conflicts detected.", na_detail="No action output declarations detected.", applicable=bool(self.action_definitions), confidence="Blocking / cascade risk"),
             self._checklist_entry("Runtime gotchas", "Planner-required input hints", ["ASV-RUN-007"], success_detail="Required inputs are either guarded or not using the risky planner-only hint.", na_detail="No action inputs detected.", applicable=bool(self.action_definitions), confidence="Planner behavior"),
             self._checklist_entry("Runtime gotchas", "Agent-type-specific messaging/context patterns", ["ASV-RUN-008", "ASV-RUN-017"], success_detail="No agent-type-specific Messaging/context issues detected.", na_detail="No employee/service-agent-only Messaging/context checks apply.", applicable=employee_agent or service_agent, confidence="Runtime / portability"),
             self._checklist_entry("Runtime gotchas", "Welcome/error message stability", ["ASV-RUN-015", "ASV-RUN-016"], success_detail="System welcome/error messages avoid known interpolation/line-break pitfalls.", na_detail="No obvious welcome/error message patterns detected.", applicable=bool(self.welcome_error_interpolation_lines or self.welcome_error_multiline_lines), confidence="Runtime drift"),

@@ -834,6 +834,7 @@ actions:
 | `is_displayable: True` on prompt outputs | Agent returns blank/empty response | Set `is_displayable: False` and let the reasoner synthesize the output. See Issue 34 |
 | Line breaks in topic `description:` | Script breaks with syntax error | Keep `description:` on a single line — no line breaks. See Issue 35 |
 | Variable name matches system context | "Field is already mapped to a Context Variable" | Avoid names like `Locale`, `Channel`, `Status`, `Origin` — use prefixed names like `customer_locale`. See Issue 36 |
+| `filter_from_agent` + `is_used_by_planner` on output | `InvalidFormatError` + cascading `ACTION_NOT_IN_SCOPE` | These are mutually exclusive. Use only `filter_from_agent: True`; remove `is_used_by_planner`. See Issue 40 |
 
 ### `@inputs` in `set` — Deploy-Breaking Anti-Pattern
 

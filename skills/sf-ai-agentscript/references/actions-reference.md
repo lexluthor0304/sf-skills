@@ -54,6 +54,8 @@ All actions in Agent Script support these properties:
 
 > **`filter_from_agent` vs `is_displayable`**: Both control the same behavior. `filter_from_agent: True` is the GA standard name (used in official documentation). `is_displayable: False` is a compile-valid alias that achieves the same result.
 
+> ⚠️ **`filter_from_agent` and `is_used_by_planner` are mutually exclusive**: Do NOT use both on the same output field. The combination causes `InvalidFormatError` which invalidates the entire action definition, triggering cascading `ACTION_NOT_IN_SCOPE` errors on every reference to that action. Use `filter_from_agent: True` alone to hide outputs from the customer. See [known-issues.md](known-issues.md#issue-40) Issue 40.
+
 ### Example with All Properties
 
 ```agentscript
