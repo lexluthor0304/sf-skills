@@ -27,7 +27,7 @@ import argparse
 import json
 import re
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from urllib.parse import urlparse
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -59,6 +59,15 @@ NOISE_LINES = {
 }
 
 
+def _looks_like_section_banner(line: str) -> bool:
+    stripped = line.strip()
+    if not stripped or len(stripped) > 120:
+        return False
+    if not any(ch.isalpha() for ch in stripped):
+        return False
+    return stripped.upper() == stripped
+
+
 def normalize_text(text: str) -> str:
     text = text.replace("\u00a0", " ").replace("\r", "")
     text = re.sub(r"\n{3,}", "\n\n", text)
@@ -73,7 +82,9 @@ def cleanup_help_text(text: str, title: str = "") -> str:
 
     lines = [line.strip() for line in text.splitlines()]
     cleaned: List[str] = []
-    for idx, line in enumerate(lines):
+    normalized_title = title.strip().lower()
+
+    for line in lines:
         if not line:
             if cleaned and cleaned[-1] != "":
                 cleaned.append("")
@@ -87,16 +98,29 @@ def cleanup_help_text(text: str, title: str = "") -> str:
         if lowered in {"salesforce help", "docs"}:
             continue
 
-        if title and "|" in line:
-            title_pos = lowered.find(title.lower())
+        if normalized_title and "|" in line:
+            title_pos = lowered.find(normalized_title)
             if title_pos >= 0:
                 line = line[title_pos:].strip()
                 lowered = line.lower()
 
-        if idx == 0 and title and line.isupper() and len(line) < 120:
-            continue
-
         cleaned.append(line)
+
+    while cleaned and cleaned[0] == "":
+        cleaned.pop(0)
+
+    if normalized_title and len(cleaned) >= 2:
+        first = cleaned[0].strip()
+        second = cleaned[1].strip()
+        if _looks_like_section_banner(first) and second.lower() == normalized_title:
+            cleaned.pop(0)
+
+    if normalized_title and cleaned:
+        first = cleaned[0].strip()
+        if "|" in first:
+            title_pos = first.lower().find(normalized_title)
+            if title_pos >= 0:
+                cleaned[0] = first[title_pos:].strip()
 
     text = "\n".join(cleaned)
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
@@ -106,6 +130,102 @@ def cleanup_help_text(text: str, title: str = "") -> str:
 def looks_like_shell(title: str, text: str) -> bool:
     haystack = f"{title}\n{text}".lower()
     return any(token in haystack for token in SHELL_TOKENS)
+
+
+def _split_blocks(text: str) -> List[str]:
+    blocks = [block.strip() for block in re.split(r"\n\s*\n", text) if block.strip()]
+    return blocks
+
+
+def _is_heading_line(line: str) -> bool:
+    stripped = line.strip()
+    if not stripped or len(stripped) > 100:
+        return False
+    if stripped.endswith(":"):
+        return False
+    if stripped.lower().startswith(("available in:", "this article applies to:", "this article doesn", "view supported editions")):
+        return False
+    if _looks_like_section_banner(stripped):
+        return True
+    if stripped == stripped.title() and any(ch.isalpha() for ch in stripped):
+        return True
+    return False
+
+
+def _classify_metadata_block(block: str) -> Tuple[str, str] | None:
+    stripped = block.strip()
+    lowered = stripped.lower()
+    if lowered.startswith("required editions"):
+        return "required_editions", stripped
+    if lowered.startswith("user permissions"):
+        return "user_permissions", stripped
+    if lowered.startswith("important"):
+        return "important", stripped
+    if lowered.startswith("this article applies to:"):
+        return "applies_to", stripped
+    if lowered.startswith("this article doesn"):
+        return "does_not_apply_to", stripped
+    if lowered.startswith("available in:"):
+        return "availability", stripped
+    if lowered.startswith("needed"):
+        return "needed", stripped
+    return None
+
+
+def structure_help_text(text: str, title: str = "") -> Dict[str, Any]:
+    blocks = _split_blocks(text)
+    normalized_title = title.strip().lower()
+    if blocks and normalized_title and blocks[0].strip().lower() == normalized_title:
+        blocks = blocks[1:]
+
+    metadata: Dict[str, List[str]] = {}
+    content_blocks: List[str] = []
+    sections: List[Dict[str, str]] = []
+
+    i = 0
+    while i < len(blocks):
+        block = blocks[i]
+        meta = _classify_metadata_block(block)
+        if meta:
+            key, value = meta
+            metadata.setdefault(key, []).append(value)
+            i += 1
+            continue
+
+        heading_candidate = block.strip()
+        if _is_heading_line(heading_candidate) and i + 1 < len(blocks):
+            next_block = blocks[i + 1]
+            next_meta = _classify_metadata_block(next_block)
+            if not next_meta and next_block.strip().lower() != normalized_title:
+                section = {
+                    "heading": heading_candidate,
+                    "text": next_block.strip(),
+                }
+                sections.append(section)
+                content_blocks.append(f"{heading_candidate}\n{next_block.strip()}".strip())
+                i += 2
+                continue
+
+        lines = [line.strip() for line in block.splitlines() if line.strip()]
+        if len(lines) >= 2 and _is_heading_line(lines[0]):
+            sections.append({
+                "heading": lines[0],
+                "text": "\n".join(lines[1:]).strip(),
+            })
+        content_blocks.append(block)
+        i += 1
+
+    intro = content_blocks[0] if content_blocks else ""
+    body = "\n\n".join(content_blocks[1:]) if len(content_blocks) > 1 else ""
+
+    compact_metadata = {key: "\n\n".join(values) for key, values in metadata.items()}
+    return {
+        "intro": intro,
+        "body": body,
+        "metadata": compact_metadata,
+        "sections": sections,
+        "contentBlocks": content_blocks,
+    }
 
 
 def parse_args() -> argparse.Namespace:
@@ -291,7 +411,9 @@ def extract(url: str, timeout_seconds: int) -> Dict[str, Any]:
             )
             payload["httpStatus"] = http_status
 
-            cleaned_text = cleanup_help_text(payload.get("text", ""), payload.get("title", ""))
+            raw_text = normalize_text(payload.get("text", ""))
+            cleaned_text = cleanup_help_text(raw_text, payload.get("title", ""))
+            structured = structure_help_text(cleaned_text, payload.get("title", ""))
             likely_shell = looks_like_shell(payload.get("title", ""), cleaned_text)
             ok = bool(cleaned_text) and len(cleaned_text) >= 400 and not likely_shell
 
@@ -304,7 +426,13 @@ def extract(url: str, timeout_seconds: int) -> Dict[str, Any]:
                 "strategy": payload.get("strategy"),
                 "selector": payload.get("selector"),
                 "likelyShell": likely_shell,
+                "rawText": raw_text,
                 "text": cleaned_text,
+                "intro": structured.get("intro", ""),
+                "body": structured.get("body", ""),
+                "metadata": structured.get("metadata", {}),
+                "sections": structured.get("sections", []),
+                "contentBlocks": structured.get("contentBlocks", []),
                 "contentLinks": payload.get("contentLinks", []),
                 "childLinks": payload.get("childLinks", []),
                 "candidateCount": payload.get("candidateCount", 0),

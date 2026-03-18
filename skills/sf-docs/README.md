@@ -30,15 +30,25 @@ This skill no longer includes:
 
 ## Optional utility
 
-A minimal helper script is available for hard `help.salesforce.com` pages:
+A tiny wrapper is available for official Salesforce doc URLs:
+
+```bash
+python3 skills/sf-docs/scripts/extract_salesforce_doc.py \
+  --url "https://help.salesforce.com/s/articleView?id=service.miaw_security.htm&type=5" \
+  --pretty
+```
+
+Behavior:
+- automatically routes `help.salesforce.com` URLs into the dedicated Help extractor
+- uses a lightweight browser-rendered path for `developer.salesforce.com` URLs
+
+The underlying Help extractor is still available directly at:
 
 ```bash
 python3 skills/sf-docs/scripts/extract_help_salesforce.py \
   --url "https://help.salesforce.com/s/articleView?id=service.miaw_security.htm&type=5" \
   --pretty
 ```
-
-It uses Playwright, browser rendering, and deep shadow DOM traversal to extract the article body from Help pages.
 
 ## Key idea
 
