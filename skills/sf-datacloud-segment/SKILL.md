@@ -49,6 +49,7 @@ Ask for or infer:
 ## Core Operating Rules
 
 - Treat Data Cloud segment SQL as distinct from CRM SOQL.
+- Run the shared readiness classifier before mutating audience assets: `node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase segment --json`.
 - Prefer reusable JSON definitions for repeatable segment and CI creation.
 - Use `--api-version 64.0` when segment creation behavior is unstable on newer defaults.
 - Verify with counts or SQL after publish/run steps instead of assuming success.
@@ -58,25 +59,30 @@ Ask for or infer:
 
 ## Recommended Workflow
 
-### 1. Inspect current state
+### 1. Classify readiness for segment work
+```bash
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase segment --json
+```
+
+### 2. Inspect current state
 ```bash
 sf data360 segment list -o <org> 2>/dev/null
 sf data360 calculated-insight list -o <org> 2>/dev/null
 ```
 
-### 2. Create with reusable JSON definitions
+### 3. Create with reusable JSON definitions
 ```bash
 sf data360 segment create -o <org> -f segment.json --api-version 64.0 2>/dev/null
 sf data360 calculated-insight create -o <org> -f ci.json 2>/dev/null
 ```
 
-### 3. Publish or run explicitly
+### 4. Publish or run explicitly
 ```bash
 sf data360 segment publish -o <org> --name My_Segment 2>/dev/null
 sf data360 calculated-insight run -o <org> --name Lifetime_Value 2>/dev/null
 ```
 
-### 4. Verify with counts or SQL
+### 5. Verify with counts or SQL
 ```bash
 sf data360 segment count -o <org> --name My_Segment 2>/dev/null
 sf data360 query sql -o <org> --sql 'SELECT COUNT(*) FROM "UnifiedssotIndividualMain__dlm"' 2>/dev/null
@@ -91,6 +97,7 @@ sf data360 query sql -o <org> --sql 'SELECT COUNT(*) FROM "UnifiedssotIndividual
 - Segment SQL is not SOQL.
 - Calculated insight assets and segment SQL have different limitations.
 - Publish/run steps may kick off asynchronous work even when the command returns quickly.
+- An empty segment or calculated-insight list usually means the module is reachable but unconfigured, not unavailable.
 
 ---
 
@@ -112,4 +119,5 @@ Next step: <act / retrieve / follow-up>
 - [README.md](README.md)
 - [../sf-datacloud/assets/definitions/calculated-insight.template.json](../sf-datacloud/assets/definitions/calculated-insight.template.json)
 - [../sf-datacloud/assets/definitions/segment.template.json](../sf-datacloud/assets/definitions/segment.template.json)
+- [../sf-datacloud/references/feature-readiness.md](../sf-datacloud/references/feature-readiness.md)
 - [../sf-datacloud/UPSTREAM.md](../sf-datacloud/UPSTREAM.md)

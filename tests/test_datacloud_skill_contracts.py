@@ -61,6 +61,8 @@ def test_orchestrator_links_every_phase_skill_and_core_assets() -> None:
         "search-index.template.json",
         "scripts/verify-plugin.sh",
         "scripts/bootstrap-plugin.sh",
+        "scripts/diagnose-org.mjs",
+        "references/feature-readiness.md",
     ]:
         assert asset in body, f"orchestrator should reference deterministic asset: {asset}"
 
@@ -80,3 +82,14 @@ def test_phase_skills_delegate_to_adjacent_phases_or_neighboring_skills() -> Non
         _, body = split_frontmatter(skill_text(skill))
         for linked_skill in linked_skills:
             assert linked_skill in body, f"{skill} should mention neighboring skill handoff: {linked_skill}"
+
+
+def test_datacloud_skills_reference_shared_readiness_helpers() -> None:
+    for skill in DATACLOUD_SKILLS:
+        _, body = split_frontmatter(skill_text(skill))
+        if skill == "sf-datacloud":
+            assert "scripts/diagnose-org.mjs" in body
+            assert "feature-readiness.md" in body
+        else:
+            assert "diagnose-org.mjs" in body, f"{skill} should point to the shared readiness classifier"
+            assert "feature-readiness.md" in body, f"{skill} should reference feature-readiness guidance"

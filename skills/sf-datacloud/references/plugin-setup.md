@@ -50,9 +50,16 @@ sf plugins link .
 sf data360 man
 bash ~/.claude/skills/sf-datacloud/scripts/verify-plugin.sh
 bash ~/.claude/skills/sf-datacloud/scripts/verify-plugin.sh myorg
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o myorg --json
 ```
 
 `sf data360 doctor` is useful, but it is not the only readiness signal. On partially provisioned orgs it can fail even when other read-only Data Cloud commands still work. The helper script treats `doctor` as advisory and falls back to additional smoke checks.
+
+Use `diagnose-org.mjs` when you need phase-specific readiness classification instead of a simple pass/fail check. It helps distinguish:
+- empty-but-enabled modules
+- feature-gated modules
+- query-plane issues
+- runtime/auth failures
 
 ## Output-noise tip
 
@@ -69,6 +76,15 @@ sf data360 segment list -o myorg 2>/dev/null
 2. re-open your shell if `sf` plugin discovery is stale
 3. verify with `sf data360 man`
 4. only then start live Data Cloud work
+
+## Setup guidance reminder
+
+The runtime can help you **detect** missing capability, but it cannot fully replace Setup for:
+- initial Data Cloud provisioning / tenant creation
+- license assignment
+- every org-wide feature enablement step
+
+When a module is gated, guide users toward the right setup area instead of promising a fully programmatic enablement flow. See [feature-readiness.md](feature-readiness.md).
 
 ## Scope reminder
 

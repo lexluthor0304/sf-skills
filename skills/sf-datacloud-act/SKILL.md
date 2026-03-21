@@ -49,6 +49,7 @@ Ask for or infer:
 ## Core Operating Rules
 
 - Verify the upstream segment or insight is healthy before creating downstream delivery assets.
+- Run the shared readiness classifier before mutating activation assets: `node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase act --json`.
 - Inspect available platforms and targets before mutating activation setup.
 - Keep destination definitions deterministic and reusable where possible.
 - Treat downstream credential and platform constraints as separate validation concerns.
@@ -58,26 +59,31 @@ Ask for or infer:
 
 ## Recommended Workflow
 
-### 1. Inspect destinations first
+### 1. Classify readiness for act work
+```bash
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase act --json
+```
+
+### 2. Inspect destinations first
 ```bash
 sf data360 activation platforms -o <org> 2>/dev/null
 sf data360 activation-target list -o <org> 2>/dev/null
 sf data360 data-action-target list -o <org> 2>/dev/null
 ```
 
-### 2. Create the destination before the activation
+### 3. Create the destination before the activation
 ```bash
 sf data360 activation-target create -o <org> -f target.json 2>/dev/null
 sf data360 data-action-target create -o <org> -f target.json 2>/dev/null
 ```
 
-### 3. Create the activation or data action
+### 4. Create the activation or data action
 ```bash
 sf data360 activation create -o <org> -f activation.json 2>/dev/null
 sf data360 data-action create -o <org> -f action.json 2>/dev/null
 ```
 
-### 4. Verify downstream readiness
+### 5. Verify downstream readiness
 ```bash
 sf data360 activation list -o <org> 2>/dev/null
 sf data360 activation data -o <org> --name <activation> 2>/dev/null
@@ -91,6 +97,7 @@ sf data360 activation data -o <org> --name <activation> 2>/dev/null
 - Destination configuration usually comes before activation creation.
 - Downstream credential and platform constraints may live outside the Data Cloud CLI alone.
 - Read-only inspection is the safest first move when the destination setup is unclear.
+- `CdpActivationTarget` or `CdpActivationExternalPlatform` means the activation surface is gated for the current org/user; guide the user toward activation setup, permissions, and destination configuration instead of retrying blindly.
 
 ---
 
@@ -116,3 +123,4 @@ Next step: <destination validation or downstream testing>
 - [../sf-datacloud/assets/definitions/data-action.template.json](../sf-datacloud/assets/definitions/data-action.template.json)
 - [../sf-datacloud/UPSTREAM.md](../sf-datacloud/UPSTREAM.md)
 - [../sf-datacloud/references/plugin-setup.md](../sf-datacloud/references/plugin-setup.md)
+- [../sf-datacloud/references/feature-readiness.md](../sf-datacloud/references/feature-readiness.md)

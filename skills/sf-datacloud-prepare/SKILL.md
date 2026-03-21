@@ -49,6 +49,7 @@ Ask for or infer:
 ## Core Operating Rules
 
 - Verify the external plugin runtime before running Data Cloud commands.
+- Run the shared readiness classifier before mutating ingestion assets: `node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase prepare --json`.
 - Prefer inspecting existing streams and DLOs before creating new ingestion assets.
 - Suppress linked-plugin warning noise with `2>/dev/null` for normal usage.
 - Treat DLO naming and field naming as Data Cloud-specific, not CRM-native.
@@ -58,25 +59,30 @@ Ask for or infer:
 
 ## Recommended Workflow
 
-### 1. Inspect existing ingestion assets
+### 1. Classify readiness for prepare work
+```bash
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase prepare --json
+```
+
+### 2. Inspect existing ingestion assets
 ```bash
 sf data360 data-stream list -o <org> 2>/dev/null
 sf data360 dlo list -o <org> 2>/dev/null
 ```
 
-### 2. Create or inspect streams intentionally
+### 3. Create or inspect streams intentionally
 ```bash
 sf data360 data-stream get -o <org> --name <stream> 2>/dev/null
 sf data360 data-stream create-from-object -o <org> --object Contact --connection SalesforceDotCom_Home 2>/dev/null
 sf data360 data-stream create -o <org> -f stream.json 2>/dev/null
 ```
 
-### 3. Check DLO shape
+### 4. Check DLO shape
 ```bash
 sf data360 dlo get -o <org> --name Contact_Home__dll 2>/dev/null
 ```
 
-### 4. Only then move into harmonization
+### 5. Only then move into harmonization
 Once the stream and DLO are healthy, hand off to [sf-datacloud-harmonize](../sf-datacloud-harmonize/SKILL.md).
 
 ---
@@ -87,6 +93,7 @@ Once the stream and DLO are healthy, hand off to [sf-datacloud-harmonize](../sf-
 - Stream deletion can also delete the associated DLO unless the delete mode says otherwise.
 - DLO field naming differs from CRM field naming.
 - Query DLO record counts with Data Cloud SQL instead of assuming list output is sufficient.
+- `CdpDataStreams` means the stream module is gated for the current org/user; guide the user to provisioning/permissions review instead of retrying blindly.
 
 ---
 
@@ -108,3 +115,4 @@ Next step: <harmonize or retrieve>
 - [README.md](README.md)
 - [../sf-datacloud/assets/definitions/data-stream.template.json](../sf-datacloud/assets/definitions/data-stream.template.json)
 - [../sf-datacloud/references/plugin-setup.md](../sf-datacloud/references/plugin-setup.md)
+- [../sf-datacloud/references/feature-readiness.md](../sf-datacloud/references/feature-readiness.md)

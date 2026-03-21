@@ -49,35 +49,42 @@ Ask for or infer:
 ## Core Operating Rules
 
 - Verify the plugin runtime first; see [../sf-datacloud/references/plugin-setup.md](../sf-datacloud/references/plugin-setup.md).
+- Run the shared readiness classifier before mutating connections: `node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase connect --json`.
 - Prefer read-only discovery before connection creation.
 - Suppress linked-plugin warning noise with `2>/dev/null` for standard usage.
 - Remember that `connection list` requires `--connector-type`.
 - Discover existing connector types from streams first when the org is unfamiliar.
+- Do not use query-plane errors from other phases to declare connect work unavailable.
 
 ---
 
 ## Recommended Workflow
 
-### 1. Discover connector types
+### 1. Classify readiness for connect work
+```bash
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase connect --json
+```
+
+### 2. Discover connector types
 ```bash
 sf data360 connection connector-list -o <org> 2>/dev/null
 sf data360 data-stream list -o <org> 2>/dev/null
 ```
 
-### 2. Inspect connections by type
+### 3. Inspect connections by type
 ```bash
 sf data360 connection list -o <org> --connector-type SalesforceDotCom 2>/dev/null
 sf data360 connection list -o <org> --connector-type REDSHIFT 2>/dev/null
 ```
 
-### 3. Inspect a specific connection
+### 4. Inspect a specific connection
 ```bash
 sf data360 connection get -o <org> --name <connection> 2>/dev/null
 sf data360 connection objects -o <org> --name <connection> 2>/dev/null
 sf data360 connection fields -o <org> --name <connection> 2>/dev/null
 ```
 
-### 4. Test or create only after discovery
+### 5. Test or create only after discovery
 ```bash
 sf data360 connection test -o <org> --name <connection> 2>/dev/null
 sf data360 connection create -o <org> -f connection.json 2>/dev/null
@@ -91,6 +98,7 @@ sf data360 connection create -o <org> -f connection.json 2>/dev/null
 - The connection catalog name and connection connector type are not always the same label.
 - Some external connector credential setup still depends on UI-side configuration.
 - Use connection metadata inspection before guessing available source objects or databases.
+- An empty connection list usually means "enabled but not configured yet", not "feature disabled".
 
 ---
 
@@ -111,4 +119,5 @@ Next step: <prepare phase or connector follow-up>
 
 - [README.md](README.md)
 - [../sf-datacloud/references/plugin-setup.md](../sf-datacloud/references/plugin-setup.md)
+- [../sf-datacloud/references/feature-readiness.md](../sf-datacloud/references/feature-readiness.md)
 - [../sf-datacloud/UPSTREAM.md](../sf-datacloud/UPSTREAM.md)

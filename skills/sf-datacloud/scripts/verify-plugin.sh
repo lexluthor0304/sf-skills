@@ -53,3 +53,6 @@ EOF
 fi
 
 echo "Verification complete."
+if [[ -n "${ORG}" ]]; then
+  echo "Next: node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o '${ORG}' --json"
+fi

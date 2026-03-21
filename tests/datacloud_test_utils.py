@@ -9,6 +9,8 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 ORG_ALIAS = os.getenv("SF_DATACLOUD_ORG_ALIAS")
+PARTIAL_ORG_ALIAS = os.getenv("SF_DATACLOUD_PARTIAL_ORG_ALIAS")
+ENABLED_ORG_ALIAS = os.getenv("SF_DATACLOUD_ENABLED_ORG_ALIAS")
 
 DATACLOUD_SKILLS = [
     "sf-datacloud",
@@ -126,9 +128,10 @@ EXPECTED_COMMANDS = {
         "sf data360 man",
         "sf data360 doctor",
         "sf data360 data-stream list",
-        "sf data360 dmo list --all",
+        "sf data360 dmo list",
         "sf data360 identity-resolution list",
         "sf data360 segment list",
+        "diagnose-org.mjs",
     ],
     "sf-datacloud-connect": [
         "sf data360 connection connector-list",
@@ -274,6 +277,10 @@ def sf_data360_available() -> bool:
 
 def output_text(result: subprocess.CompletedProcess[str]) -> str:
     return strip_ansi((result.stdout or "") + (result.stderr or ""))
+
+
+def output_json(result: subprocess.CompletedProcess[str]) -> dict:
+    return json.loads(result.stdout)
 
 
 def entry_matches_prompt(entry: dict, prompt: str) -> bool:

@@ -64,10 +64,14 @@ Ask for or infer:
 - data sources involved: CRM objects, external databases, file ingestion, knowledge, etc.
 - desired outcome: unified profiles, segments, activations, vector search, analytics, or troubleshooting
 - whether the user is working in the default data space or a custom one
+- whether the org has already been classified with `scripts/diagnose-org.mjs`
+- which command family is failing today, if any
 
-If plugin availability is uncertain, start with:
+If plugin availability or org readiness is uncertain, start with:
 - [references/plugin-setup.md](references/plugin-setup.md)
+- [references/feature-readiness.md](references/feature-readiness.md)
 - `scripts/verify-plugin.sh`
+- `scripts/diagnose-org.mjs`
 - `scripts/bootstrap-plugin.sh`
 
 ---
@@ -76,8 +80,11 @@ If plugin availability is uncertain, start with:
 
 - Use the external `sf data360` plugin runtime; do **not** reimplement or vendor the command layer.
 - Prefer the smallest phase-specific skill once the task is localized.
+- Run readiness classification before mutation-heavy work. Prefer `scripts/diagnose-org.mjs` over guessing from one failing command.
 - For `sf data360` commands, suppress linked-plugin warning noise with `2>/dev/null` unless the stderr output is needed for debugging.
 - Distinguish **Data Cloud SQL** from CRM SOQL.
+- Do **not** treat `sf data360 doctor` as a full-product readiness check; the current upstream command only checks the search-index surface.
+- Do **not** treat `query describe` as a universal tenant probe; only use it with a known DMO/DLO table after broader readiness is confirmed.
 - Preserve Data Cloud-specific API-version workarounds when they matter.
 - Prefer generic, reusable JSON definition files over org-specific workshop payloads.
 
@@ -85,7 +92,7 @@ If plugin availability is uncertain, start with:
 
 ## Recommended Workflow
 
-### 1. Verify the runtime
+### 1. Verify the runtime and auth
 Confirm:
 - `sf` is installed
 - the community Data Cloud plugin is linked
@@ -100,17 +107,36 @@ bash ~/.claude/skills/sf-datacloud/scripts/verify-plugin.sh <alias>
 
 Treat `sf data360 doctor` as a broad health signal, not the sole gate. On partially provisioned orgs it can fail even when read-only command families like connectors, DMOs, or segments still work.
 
-### 2. Discover existing state before changing anything
-Use read-only inspection first:
+### 2. Classify readiness before changing anything
+Run the shared classifier first:
 ```bash
-sf data360 doctor -o <org> 2>/dev/null
-sf data360 data-stream list -o <org> 2>/dev/null
-sf data360 dmo list --all -o <org> 2>/dev/null
-sf data360 identity-resolution list -o <org> 2>/dev/null
-sf data360 segment list -o <org> 2>/dev/null
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --json
 ```
 
-### 3. Localize the phase
+Only use a query-plane probe after you know the table name is real:
+```bash
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase retrieve --describe-table MyDMO__dlm --json
+```
+
+Use the classifier to distinguish:
+- empty-but-enabled modules
+- feature-gated modules
+- query-plane issues
+- runtime/auth failures
+
+### 3. Discover existing state with read-only commands
+Use targeted inspection after classification:
+```bash
+sf data360 doctor -o <org> 2>/dev/null
+sf data360 data-space list -o <org> 2>/dev/null
+sf data360 data-stream list -o <org> 2>/dev/null
+sf data360 dmo list -o <org> 2>/dev/null
+sf data360 identity-resolution list -o <org> 2>/dev/null
+sf data360 segment list -o <org> 2>/dev/null
+sf data360 activation platforms -o <org> 2>/dev/null
+```
+
+### 4. Localize the phase
 Route the task:
 - source/connector issue → Connect
 - ingestion/DLO/stream issue → Prepare
@@ -119,7 +145,7 @@ Route the task:
 - downstream push issue → Act
 - SQL/search/index issue → Retrieve
 
-### 4. Choose deterministic artifacts when possible
+### 5. Choose deterministic artifacts when possible
 Prefer JSON definition files and repeatable scripts over one-off manual steps. Generic templates live in:
 - `assets/definitions/data-stream.template.json`
 - `assets/definitions/dmo.template.json`
@@ -135,7 +161,7 @@ Prefer JSON definition files and repeatable scripts over one-off manual steps. G
 - `assets/definitions/data-action.template.json`
 - `assets/definitions/search-index.template.json`
 
-### 5. Verify after each phase
+### 6. Verify after each phase
 Typical verification:
 - stream/DLO exists
 - DMO/mapping exists
@@ -148,10 +174,11 @@ Typical verification:
 ## High-Signal Gotchas
 
 - `connection list` requires `--connector-type`.
-- `dmo list` should usually use `--all`.
+- `dmo list --all` is useful when you need the full catalog, but first-page `dmo list` is often enough for readiness checks and much faster.
 - Segment creation may need `--api-version 64.0`.
 - `segment members` returns opaque IDs; use SQL joins for human-readable details.
 - `sf data360 doctor` can fail on partially provisioned orgs even when some read-only commands still work; fall back to targeted smoke checks.
+- `query describe` errors such as `Couldn't find CDP tenant ID` or `DataModelEntity ... not found` are query-plane clues, not automatic proof that the whole product is disabled.
 - Many long-running jobs are asynchronous in practice even when the command returns quickly.
 - Some Data Cloud operations still require UI setup outside the CLI runtime.
 
@@ -162,20 +189,22 @@ Typical verification:
 When finishing, report in this order:
 1. **Task classification**
 2. **Runtime status**
-3. **Phase(s) involved**
-4. **Commands or artifacts used**
-5. **Verification result**
-6. **Next recommended step**
+3. **Readiness classification**
+4. **Phase(s) involved**
+5. **Commands or artifacts used**
+6. **Verification result**
+7. **Next recommended step**
 
 Suggested shape:
 
 ```text
 Data Cloud task: <setup / inspect / troubleshoot / migrate>
 Runtime: <plugin ready / missing / partially verified>
+Readiness: <ready / ready_empty / partial / feature_gated / blocked>
 Phases: <connect / prepare / harmonize / segment / act / retrieve>
 Artifacts: <json files, commands, scripts>
 Verification: <passed / partial / blocked>
-Next step: <next phase or cross-skill handoff>
+Next step: <next phase, setup guidance, or cross-skill handoff>
 ```
 
 ---
@@ -198,6 +227,7 @@ Next step: <next phase or cross-skill handoff>
 ### Start here
 - [README.md](README.md)
 - [references/plugin-setup.md](references/plugin-setup.md)
+- [references/feature-readiness.md](references/feature-readiness.md)
 - [UPSTREAM.md](UPSTREAM.md)
 
 ### Phase skills
@@ -211,4 +241,5 @@ Next step: <next phase or cross-skill handoff>
 ### Deterministic helpers
 - [scripts/bootstrap-plugin.sh](scripts/bootstrap-plugin.sh)
 - [scripts/verify-plugin.sh](scripts/verify-plugin.sh)
+- [scripts/diagnose-org.mjs](scripts/diagnose-org.mjs)
 - [assets/definitions/](assets/definitions/)

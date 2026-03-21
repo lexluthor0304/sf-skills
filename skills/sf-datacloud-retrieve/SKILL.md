@@ -48,6 +48,7 @@ Ask for or infer:
 ## Core Operating Rules
 
 - Treat Data Cloud SQL as its own query language, not SOQL.
+- Run the shared readiness classifier before relying on query/search surfaces: `node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase retrieve --json`.
 - Use describe before guessing columns.
 - Prefer `sqlv2` or async query flows for larger result sets.
 - Use vector search only when the search index lifecycle is healthy.
@@ -57,19 +58,26 @@ Ask for or infer:
 
 ## Recommended Workflow
 
-### 1. Choose the smallest correct query shape
+### 1. Classify readiness for retrieve work
+```bash
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase retrieve --json
+# optional query-plane probe, only with a real table name
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase retrieve --describe-table MyDMO__dlm --json
+```
+
+### 2. Choose the smallest correct query shape
 ```bash
 sf data360 query sql -o <org> --sql 'SELECT COUNT(*) FROM "ssot__Individual__dlm"' 2>/dev/null
 sf data360 query sqlv2 -o <org> --sql 'SELECT * FROM "ssot__Individual__dlm"' 2>/dev/null
 sf data360 query async-create -o <org> --sql 'SELECT * FROM "ssot__Individual__dlm"' 2>/dev/null
 ```
 
-### 2. Use describe before guessing fields
+### 3. Use describe before guessing fields
 ```bash
 sf data360 query describe -o <org> --table ssot__Individual__dlm 2>/dev/null
 ```
 
-### 3. Use vector search only when an index exists
+### 4. Use vector search only when an index exists
 ```bash
 sf data360 search-index list -o <org> 2>/dev/null
 sf data360 query vector -o <org> --index Knowledge_Index --query "reset password" --limit 5 2>/dev/null
@@ -84,6 +92,7 @@ sf data360 query vector -o <org> --index Knowledge_Index --query "reset password
 - `sqlv2` is better than ad hoc OFFSET paging for medium result sets.
 - async query is preferable for large results.
 - search-index operations and vector queries depend on the index lifecycle being healthy.
+- `query describe` is not a universal tenant probe; only run it with a known DMO or DLO table after broader readiness has been confirmed.
 
 ---
 
@@ -105,3 +114,4 @@ Next step: <segment / harmonize / follow-up>
 - [README.md](README.md)
 - [../sf-datacloud/assets/definitions/search-index.template.json](../sf-datacloud/assets/definitions/search-index.template.json)
 - [../sf-datacloud/references/plugin-setup.md](../sf-datacloud/references/plugin-setup.md)
+- [../sf-datacloud/references/feature-readiness.md](../sf-datacloud/references/feature-readiness.md)

@@ -44,6 +44,8 @@ See [references/plugin-setup.md](references/plugin-setup.md).
 |---|---|
 | [scripts/bootstrap-plugin.sh](scripts/bootstrap-plugin.sh) | Clone/update the community plugin, compile it, and link it into `sf` |
 | [scripts/verify-plugin.sh](scripts/verify-plugin.sh) | Check that the runtime is available before starting Data Cloud work |
+| [scripts/diagnose-org.mjs](scripts/diagnose-org.mjs) | Classify org readiness by phase before mutating Data Cloud assets |
+| [references/feature-readiness.md](references/feature-readiness.md) | Map high-signal errors and feature gates to concrete next steps |
 | [assets/definitions/](assets/definitions/) | Generic JSON templates for repeatable Data Cloud definition files |
 | [UPSTREAM.md](UPSTREAM.md) | Upstream mapping for future distillation and maintenance |
 
@@ -73,7 +75,21 @@ bash ~/.claude/skills/sf-datacloud/scripts/verify-plugin.sh myorg
 
 The helper treats `sf data360 doctor` as advisory and falls back to additional read-only smoke checks when an org is only partially provisioned.
 
-### 2. Bootstrap the plugin if needed
+### 2. Diagnose feature readiness before mutating
+
+```bash
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o myorg --json
+# optional retrieve-plane probe, only when you know the table is real
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o myorg --phase retrieve --describe-table MyDMO__dlm --json
+```
+
+Use the diagnose helper to distinguish between:
+- feature-gated modules
+- empty-but-enabled modules
+- query-plane issues
+- runtime/auth problems
+
+### 3. Bootstrap the plugin if needed
 
 ```bash
 python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime
@@ -81,13 +97,14 @@ python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime
 bash ~/.claude/skills/sf-datacloud/scripts/bootstrap-plugin.sh
 ```
 
-### 3. Start with read-only inspection
+### 4. Start with read-only inspection
 
 ```bash
 sf data360 man
 sf data360 doctor -o myorg 2>/dev/null
-sf data360 dmo list --all -o myorg 2>/dev/null
+sf data360 dmo list -o myorg 2>/dev/null
 sf data360 segment list -o myorg 2>/dev/null
+sf data360 activation platforms -o myorg 2>/dev/null
 ```
 
 ## Common examples
@@ -103,6 +120,7 @@ sf data360 segment list -o myorg 2>/dev/null
 
 - [SKILL.md](SKILL.md) - Orchestrator guidance
 - [references/plugin-setup.md](references/plugin-setup.md) - Plugin install and verification
+- [references/feature-readiness.md](references/feature-readiness.md) - Readiness classification and setup guidance
 - [UPSTREAM.md](UPSTREAM.md) - Upstream tracking and distillation policy
 - [CREDITS.md](CREDITS.md) - Contributor and source attribution
 

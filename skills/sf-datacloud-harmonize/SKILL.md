@@ -49,7 +49,8 @@ Ask for or infer:
 ## Core Operating Rules
 
 - Inspect DMO schema before creating mappings.
-- Prefer `dmo list --all` when browsing the catalog.
+- Run the shared readiness classifier before mutating harmonization assets: `node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase harmonize --json`.
+- Prefer `dmo list --all` when browsing the catalog, but use first-page `dmo list` for fast readiness checks.
 - Use `query describe` or `dmo get --json` instead of inventing unsupported describe flows.
 - Treat identity resolution runs as asynchronous and verify results after execution.
 - Keep unified-profile work separate from STDM/session tracing work.
@@ -58,25 +59,30 @@ Ask for or infer:
 
 ## Recommended Workflow
 
-### 1. Inspect the catalog
+### 1. Classify readiness for harmonize work
+```bash
+node ~/.claude/skills/sf-datacloud/scripts/diagnose-org.mjs -o <org> --phase harmonize --json
+```
+
+### 2. Inspect the catalog
 ```bash
 sf data360 dmo list --all -o <org> 2>/dev/null
 sf data360 identity-resolution list -o <org> 2>/dev/null
 ```
 
-### 2. Inspect schema before mapping
+### 3. Inspect schema before mapping
 ```bash
 sf data360 query describe -o <org> --table ssot__Individual__dlm 2>/dev/null
 sf data360 dmo get -o <org> --name ssot__Individual__dlm --json 2>/dev/null
 ```
 
-### 3. Create or review mappings intentionally
+### 4. Create or review mappings intentionally
 ```bash
 sf data360 dmo mapping-list -o <org> --source Contact_Home__dll --target ssot__Individual__dlm 2>/dev/null
 sf data360 dmo map-to-canonical -o <org> --dlo Contact_Home__dll --dmo ssot__Individual__dlm --dry-run 2>/dev/null
 ```
 
-### 4. Run IR only after mappings are trustworthy
+### 5. Run IR only after mappings are trustworthy
 ```bash
 sf data360 identity-resolution create -o <org> -f ir-ruleset.json 2>/dev/null
 sf data360 identity-resolution run -o <org> --name Main 2>/dev/null
@@ -91,6 +97,7 @@ sf data360 identity-resolution run -o <org> --name Main 2>/dev/null
 - Mapping and related commands can be sensitive to API-version differences.
 - Unified DMO names are ruleset-specific rather than generic.
 - Data graph definitions are sensitive to field selection and relationship shape.
+- If `dmo list` works but `identity-resolution list` is gated, treat that as a phase-specific gap rather than a full Data Cloud outage.
 
 ---
 
@@ -115,3 +122,4 @@ Next step: <segment / retrieve / follow-up>
 - [../sf-datacloud/assets/definitions/relationship.template.json](../sf-datacloud/assets/definitions/relationship.template.json)
 - [../sf-datacloud/assets/definitions/identity-resolution.template.json](../sf-datacloud/assets/definitions/identity-resolution.template.json)
 - [../sf-datacloud/assets/definitions/data-graph.template.json](../sf-datacloud/assets/definitions/data-graph.template.json)
+- [../sf-datacloud/references/feature-readiness.md](../sf-datacloud/references/feature-readiness.md)
