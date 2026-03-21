@@ -33,8 +33,6 @@ The library is organized by capability area so you can scan quickly, pick the ri
 | 🚀 **DevOps & Tooling** | [sf-deploy](skills/sf-deploy/), [sf-diagram-mermaid](skills/sf-diagram-mermaid/), [sf-diagram-nanobananapro](skills/sf-diagram-nanobananapro/) | Deployment automation, Mermaid diagrams, and visual artifacts |
 | 🏢 **Industries** | [sf-industry-commoncore-omnistudio-analyze](skills/sf-industry-commoncore-omnistudio-analyze/), [sf-industry-commoncore-datamapper](skills/sf-industry-commoncore-datamapper/), [sf-industry-commoncore-integration-procedure](skills/sf-industry-commoncore-integration-procedure/), [sf-industry-commoncore-omniscript](skills/sf-industry-commoncore-omniscript/), [sf-industry-commoncore-flexcard](skills/sf-industry-commoncore-flexcard/) | OmniStudio: DataMappers, Integration Procedures, OmniScripts, FlexCards, dependency analysis |
 
-> **Data Cloud note:** the `sf-datacloud-*` family is listed in the table above. It ships with `sf-skills`, includes reusable JSON templates plus deterministic helper scripts, and relies on the external community `sf data360` CLI runtime for live Data Cloud execution. Install that runtime when prompted, or later with `python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime`.
-
 <a id="installation"></a>
 
 ## 🚀 Installation
@@ -109,16 +107,19 @@ Use this path when you want to:
 ### Managing install.py
 
 > After sf-skills is installed, use the installed copy at `~/.claude/sf-skills-install.py` for normal updates. Use `tools/install.py` only when developing or testing from a cloned repo checkout.
+>
+> **Data Cloud:** the `sf-datacloud-*` family ships with sf-skills, but live Data Cloud execution also needs the optional community `sf data360` runtime. Install it during setup when prompted, or later with `python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime`.
 
 ```bash
-python3 ~/.claude/sf-skills-install.py --status            # Check version and install state
-python3 ~/.claude/sf-skills-install.py --update            # Update to latest
-python3 ~/.claude/sf-skills-install.py --force-update      # Reinstall even if already current
-python3 ~/.claude/sf-skills-install.py --diagnose          # Run installer diagnostics
-python3 ~/.claude/sf-skills-install.py --restore-settings  # Restore settings.json from backup
-python3 ~/.claude/sf-skills-install.py --cleanup           # Clean legacy artifacts
-python3 ~/.claude/sf-skills-install.py --uninstall         # Remove everything installed by sf-skills
-python3 ~/.claude/sf-skills-install.py --dry-run           # Preview without applying
+python3 ~/.claude/sf-skills-install.py --status                  # Check version and install state
+python3 ~/.claude/sf-skills-install.py --update                  # Update to latest
+python3 ~/.claude/sf-skills-install.py --force-update            # Reinstall even if already current
+python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime  # Install optional Data Cloud runtime
+python3 ~/.claude/sf-skills-install.py --diagnose                # Run installer diagnostics
+python3 ~/.claude/sf-skills-install.py --restore-settings        # Restore settings.json from backup
+python3 ~/.claude/sf-skills-install.py --cleanup                 # Clean legacy artifacts
+python3 ~/.claude/sf-skills-install.py --uninstall               # Remove everything installed by sf-skills
+python3 ~/.claude/sf-skills-install.py --dry-run                 # Preview without applying
 ```
 
 ### Installer Profiles
