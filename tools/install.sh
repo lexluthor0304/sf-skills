@@ -504,6 +504,8 @@ check_node() {
 # ============================================================================
 
 download_and_run_installer() {
+    local with_datacloud_runtime="${1:-0}"
+
     print_step "Downloading sf-skills installer..."
 
     local tmp_installer="/tmp/sf-skills-install-$$.py"
@@ -519,7 +521,12 @@ download_and_run_installer() {
     echo ""
 
     # Run Python installer with flags to indicate we're calling from bash
-    python3 "$tmp_installer" --force --called-from-bash
+    local installer_args=(--force --called-from-bash)
+    if [[ "$with_datacloud_runtime" == "1" ]]; then
+        installer_args+=(--with-datacloud-runtime)
+    fi
+
+    python3 "$tmp_installer" "${installer_args[@]}"
     local result=$?
 
     # Cleanup
@@ -827,7 +834,15 @@ main() {
     echo -e "${BOLD}Phase 4: Installing sf-skills${NC}"
     echo "════════════════════════════════════════"
 
-    if ! download_and_run_installer; then
+    local with_datacloud_runtime="0"
+    echo ""
+    print_info "Optional add-on: community sf data360 runtime for the sf-datacloud family"
+    explain "Only needed if you plan to use the Data Cloud skills for live org execution."
+    if confirm "Install the optional Data Cloud runtime too?" "n"; then
+        with_datacloud_runtime="1"
+    fi
+
+    if ! download_and_run_installer "$with_datacloud_runtime"; then
         echo ""
         # Check if this was an SSL error
         if ! python3 -c "import urllib.request; urllib.request.urlopen('https://api.github.com', timeout=5)" 2>/dev/null; then

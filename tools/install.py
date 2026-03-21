@@ -9,6 +9,7 @@ Usage:
     python3 install.py                # Interactive install
     python3 install.py --update       # Check version + content changes
     python3 install.py --force-update # Force reinstall even if up-to-date
+    python3 install.py --with-datacloud-runtime  # Install optional Data Cloud runtime too
     python3 install.py --uninstall    # Remove sf-skills
     python3 install.py --status       # Show installation status
     python3 install.py --cleanup      # Remove legacy artifacts
@@ -107,6 +108,12 @@ SF_DOCS_BROWSER = "chromium"
 SF_DOCS_RUNTIME_DIR = CLAUDE_DIR / ".sf-docs-runtime"
 SF_DOCS_RUNTIME_VENV = SF_DOCS_RUNTIME_DIR / "venv"
 SF_DOCS_PLAYWRIGHT_BROWSERS_DIR = SF_DOCS_RUNTIME_DIR / "ms-playwright"
+
+# Optional Data Cloud runtime (community-managed, not vendored into sf-skills)
+DATACLOUD_RUNTIME_REPO = "https://github.com/gthoppae/sf-cli-plugin-data360.git"
+DATACLOUD_RUNTIME_BASE_DIR = Path.home() / ".sf-community-tools" / "datacloud"
+DATACLOUD_RUNTIME_PLUGIN_DIR = DATACLOUD_RUNTIME_BASE_DIR / "sf-cli-plugin-data360"
+DATACLOUD_RUNTIME_COMMANDS = ("git", "node", "yarn", "npx", "sf")
 
 # Temp file patterns to clean
 TEMP_FILE_PATTERNS = [
@@ -632,6 +639,121 @@ def update_metadata_fields(**updates: Any) -> None:
         return
     data.update(updates)
     META_FILE.write_text(json.dumps(data, indent=2))
+
+
+def _command_exists(command: str) -> bool:
+    """Return True when a command is available on PATH."""
+    return shutil.which(command) is not None
+
+
+def _run_command(cmd: List[str], cwd: Optional[Path] = None,
+                 timeout: int = 300) -> Tuple[bool, str]:
+    """Run an external command and capture stderr/stdout for troubleshooting."""
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=str(cwd) if cwd else None,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return False, f"Timed out after {timeout}s: {' '.join(cmd)}"
+    except OSError as exc:
+        return False, f"Failed to start {' '.join(cmd)}: {exc}"
+
+    if result.returncode == 0:
+        return True, (result.stdout or result.stderr or "").strip()
+
+    output = (result.stderr or result.stdout or "").strip()
+    if output:
+        output = output.splitlines()[-1]
+    return False, output or f"Command failed with exit code {result.returncode}: {' '.join(cmd)}"
+
+
+def get_datacloud_runtime_status() -> Dict[str, Any]:
+    """Detect whether the optional community Data Cloud runtime is available."""
+    sf_available = _command_exists("sf")
+    runtime_available = False
+    runtime_note = "sf CLI not found"
+
+    if sf_available:
+        runtime_available, runtime_note = _run_command(["sf", "data360", "man"], timeout=30)
+
+    managed_checkout = DATACLOUD_RUNTIME_PLUGIN_DIR.exists()
+    managed_git_checkout = (DATACLOUD_RUNTIME_PLUGIN_DIR / ".git").exists()
+
+    return {
+        "available": runtime_available,
+        "note": runtime_note,
+        "pluginDir": DATACLOUD_RUNTIME_PLUGIN_DIR,
+        "managedCheckout": managed_checkout,
+        "managedGitCheckout": managed_git_checkout,
+        "missingCommands": [cmd for cmd in DATACLOUD_RUNTIME_COMMANDS if not _command_exists(cmd)],
+    }
+
+
+def install_datacloud_runtime(dry_run: bool = False) -> Tuple[bool, List[str]]:
+    """Install or update the optional community Data Cloud runtime."""
+    notes: List[str] = []
+    status_before = get_datacloud_runtime_status()
+
+    missing = status_before["missingCommands"]
+    if missing:
+        return False, [
+            "Data Cloud runtime requires these commands on PATH: " + ", ".join(missing)
+        ]
+
+    if dry_run:
+        if status_before["available"] and not status_before["managedGitCheckout"]:
+            notes.append("Community `sf data360` runtime already detected in sf CLI; installer would keep the existing setup")
+            return True, notes
+        if status_before["managedGitCheckout"]:
+            notes.append(f"Would update managed Data Cloud runtime checkout: {DATACLOUD_RUNTIME_PLUGIN_DIR}")
+        else:
+            notes.append(f"Would clone Data Cloud runtime into: {DATACLOUD_RUNTIME_PLUGIN_DIR}")
+        notes.append("Would run yarn install")
+        notes.append("Would compile the runtime with npx tsc")
+        notes.append("Would link the runtime into sf via `sf plugins link .`")
+        notes.append("Would verify with `sf data360 man`")
+        return True, notes
+
+    if status_before["available"] and not status_before["managedGitCheckout"]:
+        notes.append("Community `sf data360` runtime already detected in sf CLI; leaving the existing setup unchanged")
+        return True, notes
+
+    DATACLOUD_RUNTIME_BASE_DIR.mkdir(parents=True, exist_ok=True)
+
+    if status_before["managedGitCheckout"]:
+        ok, msg = _run_command(["git", "pull", "--ff-only"], cwd=DATACLOUD_RUNTIME_PLUGIN_DIR, timeout=300)
+        notes.append(f"{'Updated' if ok else 'Failed to update'} managed checkout: {msg or DATACLOUD_RUNTIME_PLUGIN_DIR}")
+        if not ok:
+            return False, notes
+    else:
+        if DATACLOUD_RUNTIME_PLUGIN_DIR.exists() and not status_before["managedGitCheckout"]:
+            safe_rmtree(DATACLOUD_RUNTIME_PLUGIN_DIR)
+        ok, msg = _run_command(
+            ["git", "clone", DATACLOUD_RUNTIME_REPO, str(DATACLOUD_RUNTIME_PLUGIN_DIR)],
+            timeout=600,
+        )
+        notes.append(f"{'Cloned' if ok else 'Failed to clone'} runtime checkout: {msg or DATACLOUD_RUNTIME_PLUGIN_DIR}")
+        if not ok:
+            return False, notes
+
+    for cmd, label, timeout in [
+        (["yarn", "install"], "Installed runtime dependencies", 1200),
+        (["npx", "tsc"], "Compiled runtime", 1200),
+        (["sf", "plugins", "link", "."], "Linked runtime into sf", 300),
+    ]:
+        ok, msg = _run_command(cmd, cwd=DATACLOUD_RUNTIME_PLUGIN_DIR, timeout=timeout)
+        notes.append(f"{label if ok else 'Failed: ' + label.lower()}: {msg or ''}".rstrip())
+        if not ok:
+            return False, notes
+
+    ok, msg = _run_command(["sf", "data360", "man"], timeout=30)
+    notes.append(f"{'Verified' if ok else 'Failed to verify'} Data Cloud runtime: {msg or 'sf data360 man'}")
+    return ok, notes
 
 
 # ============================================================================
@@ -2346,7 +2468,9 @@ def cmd_cleanup(dry_run: bool = False) -> int:
     return 0
 
 
-def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bool = False) -> int:
+def cmd_install(dry_run: bool = False, force: bool = False,
+                called_from_bash: bool = False,
+                with_datacloud_runtime: bool = False) -> int:
     """
     Install sf-skills.
 
@@ -2354,6 +2478,7 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
         dry_run: Preview changes without applying
         force: Skip confirmation prompts
         called_from_bash: Suppress redundant output (bash wrapper handles UX)
+        with_datacloud_runtime: Install the optional community sf data360 runtime
 
     Returns:
         Exit code (0 = success)
@@ -2377,10 +2502,11 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
         # Show what will be installed
         print("""
   📦 WHAT WILL BE INSTALLED:
-     • 20 Salesforce skills (sf-apex, sf-flow, sf-metadata, ...)
+     • 32 Salesforce skills (sf-apex, sf-flow, sf-datacloud, ...)
      • 10 hook scripts (guardrails, validation)
      • LSP engine (Apex, LWC, AgentScript language servers)
      • Automatic validation, guardrails, and org preflight checks
+     • Optional Data Cloud runtime on request (--with-datacloud-runtime)
 
   📍 INSTALL LOCATIONS:
      ~/.claude/skills/sf-*/     (skills — native Claude Code discovery)
@@ -2397,6 +2523,12 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
 
     if state == InstallState.UNIFIED and not force:
         print_info(f"sf-skills already installed (v{current_version})")
+        if with_datacloud_runtime:
+            print_info("Installing optional Data Cloud runtime as requested...")
+            ok, notes = install_datacloud_runtime(dry_run=dry_run)
+            for note in notes:
+                print_substep(note)
+            return 0 if ok else 1
         print_info("Use --update to check for updates")
         return 0
 
@@ -2417,6 +2549,26 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
         if not confirm("\nProceed with installation?"):
             print("\nInstallation cancelled.")
             return 1
+
+    install_datacloud_runtime_requested = with_datacloud_runtime
+    datacloud_runtime_failure = False
+
+    should_offer_datacloud_runtime = (
+        state != InstallState.UNIFIED
+        and not install_datacloud_runtime_requested
+        and not force
+        and not dry_run
+    )
+    if should_offer_datacloud_runtime:
+        print_info("Optional add-on available: install the community `sf data360` runtime for the sf-datacloud family")
+        print_info("This is only needed if you plan to use the Data Cloud skill family for live org execution")
+        if sys.stdin.isatty():
+            install_datacloud_runtime_requested = confirm(
+                "Install the optional Data Cloud runtime now?",
+                default=False,
+            )
+        else:
+            print_info("Non-interactive install detected; use --with-datacloud-runtime to install the optional Data Cloud runtime")
 
     print()
 
@@ -2520,6 +2672,15 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
             if not sf_docs_runtime_ok:
                 print_warning("sf-docs browser runtime setup was incomplete; extraction helpers may need manual setup")
 
+            if install_datacloud_runtime_requested:
+                print_substep("Installing optional Data Cloud runtime...")
+                datacloud_runtime_ok, datacloud_runtime_notes = install_datacloud_runtime()
+                for note in datacloud_runtime_notes:
+                    print_substep(note)
+                if not datacloud_runtime_ok:
+                    datacloud_runtime_failure = True
+                    print_warning("Optional Data Cloud runtime setup did not complete successfully")
+
             # Re-exec detection: if the installer binary changed, hand off to the
             # new version for Steps 4-5. This solves the bootstrapping problem where
             # the OLD process's get_hooks_config() references deleted hooks.
@@ -2541,6 +2702,8 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
                             _exec_args.append("--force")
                         if called_from_bash:
                             _exec_args.append("--called-from-bash")
+                        if install_datacloud_runtime_requested:
+                            _exec_args.append("--with-datacloud-runtime")
                         os.execv(sys.executable, _exec_args)
                         # os.execv replaces the process; unreachable below
                 except (IOError, OSError) as e:
@@ -2568,6 +2731,11 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
             _, sf_docs_runtime_notes = install_sf_docs_runtime(source_dir, dry_run=True)
             for note in sf_docs_runtime_notes:
                 print_substep(note)
+            if install_datacloud_runtime_requested:
+                _, datacloud_runtime_notes = install_datacloud_runtime(dry_run=True)
+                print_substep("Would install optional Data Cloud runtime")
+                for note in datacloud_runtime_notes:
+                    print_substep(note)
 
         # Step 4: Configure Claude Code
         print_step(4, 5, "Configuring Claude Code...", "...")
@@ -2655,6 +2823,16 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
    • Status:    python3 ~/.claude/sf-skills-install.py --status
 ═══════════════════════════════════════════════════════════════════
 """)
+
+        if install_datacloud_runtime_requested:
+            datacloud_status = get_datacloud_runtime_status()
+            if datacloud_status["available"] and not datacloud_runtime_failure:
+                location = DATACLOUD_RUNTIME_PLUGIN_DIR if datacloud_status["managedGitCheckout"] else "already available in sf CLI"
+                print_info(f"Optional Data Cloud runtime ready ({location})")
+            else:
+                print_warning("sf-skills installed, but the optional Data Cloud runtime was not installed successfully")
+                print_info("Retry with: python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime")
+                return 1
     else:
         print(f"\n{c('DRY RUN complete - no changes made', Colors.YELLOW)}\n")
 
@@ -2663,7 +2841,8 @@ def cmd_install(dry_run: bool = False, force: bool = False, called_from_bash: bo
 
 def cmd_finalize_install(version: str, commit_sha: Optional[str] = None,
                          dry_run: bool = False, force: bool = False,
-                         called_from_bash: bool = False) -> int:
+                         called_from_bash: bool = False,
+                         with_datacloud_runtime: bool = False) -> int:
     """
     Finalize installation (Steps 4-5 only).
 
@@ -2677,6 +2856,7 @@ def cmd_finalize_install(version: str, commit_sha: Optional[str] = None,
         dry_run: Preview changes without applying
         force: Skip confirmation prompts
         called_from_bash: Suppress redundant output
+        with_datacloud_runtime: Optional Data Cloud runtime was requested during install
 
     Returns:
         Exit code (0 = success)
@@ -2762,13 +2942,25 @@ def cmd_finalize_install(version: str, commit_sha: Optional[str] = None,
    • Status:    python3 ~/.claude/sf-skills-install.py --status
 ═══════════════════════════════════════════════════════════════════
 """)
+
+        if with_datacloud_runtime:
+            datacloud_status = get_datacloud_runtime_status()
+            if datacloud_status["available"]:
+                location = DATACLOUD_RUNTIME_PLUGIN_DIR if datacloud_status["managedGitCheckout"] else "already available in sf CLI"
+                print_info(f"Optional Data Cloud runtime ready ({location})")
+            else:
+                print_warning("sf-skills installed, but the optional Data Cloud runtime was not installed successfully")
+                print_info("Retry with: python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime")
+                return 1
     else:
         print(f"\n{c('DRY RUN complete - no changes made', Colors.YELLOW)}\n")
 
     return 0
 
 
-def cmd_update(dry_run: bool = False, force: bool = False, force_update: bool = False) -> int:
+def cmd_update(dry_run: bool = False, force: bool = False,
+               force_update: bool = False,
+               with_datacloud_runtime: bool = False) -> int:
     """
     Check for and apply updates.
 
@@ -2781,6 +2973,7 @@ def cmd_update(dry_run: bool = False, force: bool = False, force_update: bool = 
         dry_run: Preview changes without applying
         force: Skip confirmation prompts
         force_update: Force reinstall even if up-to-date
+        with_datacloud_runtime: Install the optional community sf data360 runtime too
 
     Returns:
         Exit code (0 = success, 1 = error, 2 = no update available)
@@ -2820,7 +3013,11 @@ def cmd_update(dry_run: bool = False, force: bool = False, force_update: bool = 
             if not confirm("Reinstall sf-skills?"):
                 print("\nUpdate cancelled.")
                 return 1
-        return cmd_install(dry_run=dry_run, force=True)
+        return cmd_install(
+            dry_run=dry_run,
+            force=True,
+            with_datacloud_runtime=with_datacloud_runtime,
+        )
 
     # Handle network error
     if reason == UPDATE_REASON_ERROR:
@@ -2834,6 +3031,12 @@ def cmd_update(dry_run: bool = False, force: bool = False, force_update: bool = 
     # Handle up-to-date
     if reason == UPDATE_REASON_UP_TO_DATE:
         print_success("Already up to date!")
+        if with_datacloud_runtime:
+            print_info("Installing optional Data Cloud runtime as requested...")
+            ok, notes = install_datacloud_runtime(dry_run=dry_run)
+            for note in notes:
+                print_substep(note)
+            return 0 if ok else 1
         return 2
 
     # Display update reason
@@ -2852,7 +3055,11 @@ def cmd_update(dry_run: bool = False, force: bool = False, force_update: bool = 
             return 1
 
     # Run full install (will handle cleanup of old version)
-    return cmd_install(dry_run=dry_run, force=True)
+    return cmd_install(
+        dry_run=dry_run,
+        force=True,
+        with_datacloud_runtime=with_datacloud_runtime,
+    )
 
 
 def cmd_uninstall(dry_run: bool = False, force: bool = False) -> int:
@@ -3034,6 +3241,16 @@ def cmd_status() -> int:
         f"{SF_DOCS_BROWSER}={c('yes', Colors.GREEN) if sf_docs_runtime['browser'] else c('no', Colors.YELLOW)}",
     ]
     print(f"sf-docs rt:  {'  '.join(runtime_bits)}")
+
+    # Optional Data Cloud runtime status
+    datacloud_runtime = get_datacloud_runtime_status()
+    if datacloud_runtime["available"]:
+        source = (str(DATACLOUD_RUNTIME_PLUGIN_DIR)
+                  if datacloud_runtime["managedGitCheckout"]
+                  else "already available in sf CLI")
+        print(f"Data Cloud:  {c('✓', Colors.GREEN)} optional sf data360 runtime ({source})")
+    else:
+        print(f"Data Cloud:  {c('optional runtime not installed', Colors.DIM)}")
 
     # Check settings.json
     if SETTINGS_FILE.exists():
@@ -3614,6 +3831,7 @@ Examples:
   python3 install.py               # Interactive install
   python3 install.py --update      # Check version + content changes
   python3 install.py --force-update  # Force reinstall even if up-to-date
+  python3 install.py --with-datacloud-runtime  # Install optional Data Cloud runtime too
   python3 install.py --uninstall   # Remove sf-skills
   python3 install.py --status      # Show installation status
   python3 install.py --cleanup     # Remove legacy artifacts
@@ -3655,6 +3873,8 @@ Curl one-liner:
                         help="Profile management: list|save|use|show|delete [name]")
     parser.add_argument("--dry-run", action="store_true",
                         help="Preview changes without applying")
+    parser.add_argument("--with-datacloud-runtime", action="store_true",
+                        help="Install the optional community sf data360 runtime for the sf-datacloud family")
     parser.add_argument("--force", "-f", action="store_true",
                         help="Skip confirmation prompts")
     parser.add_argument("--called-from-bash", action="store_true",
@@ -3705,7 +3925,8 @@ Curl one-liner:
             commit_sha=getattr(args, 'finalize_sha', None) or None,
             dry_run=args.dry_run,
             force=args.force,
-            called_from_bash=args.called_from_bash
+            called_from_bash=args.called_from_bash,
+            with_datacloud_runtime=args.with_datacloud_runtime,
         ))
     elif args.cleanup:
         sys.exit(cmd_cleanup(dry_run=args.dry_run))
@@ -3723,13 +3944,15 @@ Curl one-liner:
         sys.exit(cmd_update(
             dry_run=args.dry_run,
             force=args.force,
-            force_update=args.force_update
+            force_update=args.force_update,
+            with_datacloud_runtime=args.with_datacloud_runtime,
         ))
     else:
         sys.exit(cmd_install(
             dry_run=args.dry_run,
             force=args.force,
-            called_from_bash=args.called_from_bash
+            called_from_bash=args.called_from_bash,
+            with_datacloud_runtime=args.with_datacloud_runtime,
         ))
 
 
