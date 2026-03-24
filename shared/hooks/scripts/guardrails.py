@@ -1,52 +1,18 @@
 #!/usr/bin/env python3
 """
-PreToolUse Guardrails Hook for sf-skills (v4.0)
+PreToolUse Guardrails Hook for sf-skills (v5.0)
 
-BLOCKING + AUTO-FIX guardrails that run BEFORE dangerous operations execute.
-This hook implements three severity levels:
+Lightweight guardrails that run BEFORE Bash and Salesforce MCP tool calls.
 
 CRITICAL (BLOCK):
-- DELETE FROM without WHERE clause
-- UPDATE without WHERE clause
 - Hardcoded credentials/API keys in commands
-- Deploy to production without --checkonly/--dry-run
-
-HIGH (AUTO-FIX):
-- Production deploy → Add --dry-run flag
-- Missing sharing keyword → Suggest fix
 
 MEDIUM (WARN):
-- Hardcoded Salesforce IDs
-- Deprecated API usage
+- Hardcoded Salesforce IDs (vary between environments)
+- Deprecated sfdx commands
+- Old API versions (< v56)
 
-Output Format (PreToolUse):
-{
-    "hookSpecificOutput": {
-        "hookEventName": "PreToolUse",
-        "permissionDecision": "deny" | "allow",
-        "permissionDecisionReason": "...",
-        "updatedInput": { ... },  # For auto-fix
-        "additionalContext": "..."  # Warnings
-    }
-}
-
-Usage:
-Add to .claude/hooks.json:
-{
-    "hooks": {
-        "PreToolUse": [{
-            "matcher": "Bash|mcp__salesforce",
-            "hooks": [{
-                "type": "command",
-                "command": "python3 ./shared/hooks/scripts/guardrails.py",
-                "timeout": 5000
-            }]
-        }]
-    }
-}
-
-Supports both Bash (sf CLI) and Salesforce MCP server tool calls.
-For MCP tools, all string values in tool_input are scanned for dangerous patterns.
+Only activates for Salesforce-related commands. Non-SF bash commands pass through.
 """
 
 import json
@@ -54,7 +20,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Optional, Tuple, Dict, Any
+from typing import Optional, Dict, Any
 
 try:
     from stdin_utils import read_stdin_safe
@@ -73,7 +39,6 @@ REGISTRY_FILE = SCRIPT_DIR / "skills-registry.json"
 
 # Severity levels
 CRITICAL = "CRITICAL"
-HIGH = "HIGH"
 MEDIUM = "MEDIUM"
 
 # =============================================================================
@@ -81,20 +46,6 @@ MEDIUM = "MEDIUM"
 # =============================================================================
 
 CRITICAL_PATTERNS = [
-    # DELETE without WHERE - catastrophic data loss
-    {
-        "pattern": r"DELETE\s+FROM\s+\w+\s*(;|$|--)",
-        "message": "DELETE without WHERE clause detected - this will delete ALL records",
-        "suggestion": "Add a WHERE clause: DELETE FROM Object WHERE Id = 'xxx'",
-        "context": "soql_dml"
-    },
-    # UPDATE without WHERE - catastrophic data modification
-    {
-        "pattern": r"UPDATE\s+\w+\s+SET\s+(?!.*WHERE)",
-        "message": "UPDATE without WHERE clause detected - this will update ALL records",
-        "suggestion": "Add a WHERE clause: UPDATE Object SET Field = 'value' WHERE Id = 'xxx'",
-        "context": "soql_dml"
-    },
     # Hardcoded API keys/secrets in commands
     {
         "pattern": r"(?:api[_-]?key|secret|password|token)\s*[=:]\s*['\"][a-zA-Z0-9]{16,}['\"]",
@@ -102,39 +53,6 @@ CRITICAL_PATTERNS = [
         "suggestion": "Use: export API_KEY='...' && sf command --api-key $API_KEY",
         "context": "security"
     },
-    # Production deploy without checkonly
-    {
-        "pattern": r"sf\s+(?:project\s+)?deploy\s+(?:start|preview)?.*--target-org\s+(?:prod|production)[^-]*$",
-        "message": "Production deployment without --dry-run or --check-only - dangerous!",
-        "suggestion": "Add --dry-run flag for validation first",
-        "context": "deploy"
-    },
-    # Force push to main/master
-    {
-        "pattern": r"git\s+push\s+(?:--force|-f)\s+(?:origin\s+)?(?:main|master)",
-        "message": "Force push to main/master detected - this can destroy history",
-        "suggestion": "Use --force-with-lease for safer force push, or push to a branch",
-        "context": "git"
-    },
-    # Drop table/database
-    {
-        "pattern": r"DROP\s+(?:TABLE|DATABASE)\s+",
-        "message": "DROP TABLE/DATABASE detected - destructive operation",
-        "suggestion": "Consider using DELETE with backup instead",
-        "context": "soql_dml"
-    },
-]
-
-# =============================================================================
-# HIGH PATTERNS (AUTO-FIX)
-# =============================================================================
-
-HIGH_PATTERNS = [
-    # NOTE: Unbounded SOQL auto-fix removed — regex cannot reliably parse
-    # SOQL inside shell-quoted strings with pipes. The greedy .+ pattern
-    # matched past pipe boundaries, appending "LIMIT 200" as jq file args.
-    # Claude's sf-soql skill already adds LIMIT to queries when appropriate.
-    #
 ]
 
 # =============================================================================
@@ -162,13 +80,6 @@ MEDIUM_PATTERNS = [
         "message": "Old API version detected (< v56)",
         "suggestion": "Consider using API v66+ for latest features",
         "context": "salesforce"
-    },
-    # SOQL without USER_MODE
-    {
-        "pattern": r"SELECT\s+.+FROM\s+\w+(?!.*WITH\s+(?:USER_MODE|SYSTEM_MODE))",
-        "message": "SOQL without USER_MODE - consider adding for security",
-        "suggestion": "Add 'WITH USER_MODE' for proper CRUD/FLS enforcement",
-        "context": "soql_dml"
     },
 ]
 
@@ -255,30 +166,6 @@ def check_critical(command: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def check_high_and_fix(command: str) -> Optional[Tuple[str, Dict[str, Any]]]:
-    """Check for HIGH patterns and return auto-fixed command if applicable."""
-    for rule in HIGH_PATTERNS:
-        if re.search(rule["pattern"], command, re.IGNORECASE):
-            # Apply the fix
-            fixed_command = re.sub(
-                rule["fix_pattern"],
-                rule["replacement"],
-                command,
-                flags=re.IGNORECASE
-            )
-            # Only return if we actually changed something
-            if fixed_command != command:
-                return (fixed_command, {
-                    "severity": HIGH,
-                    "action": "auto_fix",
-                    "message": rule["message"],
-                    "original": command,
-                    "fixed": fixed_command,
-                    "context": rule.get("context", "general")
-                })
-    return None
-
-
 def check_medium(command: str) -> list[Dict[str, Any]]:
     """Check for MEDIUM patterns that should generate warnings."""
     warnings = []
@@ -307,21 +194,6 @@ def format_block_message(issue: dict) -> str:
         f"{'─' * 60}",
         "⚠️  This operation was blocked for safety.",
         "    If this is intentional, modify your command to be more specific.",
-        f"{'═' * 60}\n"
-    ]
-    return "\n".join(lines)
-
-
-def format_autofix_message(issue: dict) -> str:
-    """Format a user-friendly auto-fix message."""
-    lines = [
-        f"\n{'═' * 60}",
-        f"🔧 AUTO-FIX APPLIED: {issue['message']}",
-        f"{'═' * 60}",
-        "",
-        f"📝 Original: {issue['original'][:80]}{'...' if len(issue['original']) > 80 else ''}",
-        f"✅ Fixed:    {issue['fixed'][:80]}{'...' if len(issue['fixed']) > 80 else ''}",
-        "",
         f"{'═' * 60}\n"
     ]
     return "\n".join(lines)
@@ -395,25 +267,6 @@ def main():
                 "permissionDecision": "deny",
                 "permissionDecisionReason": critical_issue["message"],
                 "additionalContext": format_block_message(critical_issue)
-            }
-        }
-        print(json.dumps(output))
-        sys.exit(0)
-
-    # Check for HIGH issues (AUTO-FIX)
-    fix_result = check_high_and_fix(command)
-    if fix_result:
-        fixed_command, issue = fix_result
-        # Create modified input
-        modified_input = dict(tool_input)
-        modified_input["command"] = fixed_command
-
-        output = {
-            "hookSpecificOutput": {
-                "hookEventName": "PreToolUse",
-                "permissionDecision": "allow",
-                "updatedInput": modified_input,
-                "additionalContext": format_autofix_message(issue)
             }
         }
         print(json.dumps(output))
