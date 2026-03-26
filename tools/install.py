@@ -762,6 +762,16 @@ def install_datacloud_runtime(dry_run: bool = False) -> Tuple[bool, List[str]]:
         (["sf", "plugins", "link", "."], "Linked runtime into sf", 300),
     ]:
         ok, msg = _run_command(cmd, cwd=DATACLOUD_RUNTIME_PLUGIN_DIR, timeout=timeout)
+        if not ok and "EACCES" in msg:
+            plugin_dir = str(DATACLOUD_RUNTIME_PLUGIN_DIR)
+            notes.append(
+                f"Failed: {label.lower()}: Permission denied (EACCES)\n"
+                f"  Your sf CLI was likely installed with sudo/root. Fix with:\n"
+                f"    sudo sf plugins link {plugin_dir}\n"
+                f"  Or fix permissions permanently:\n"
+                f"    sudo chown -R $(whoami) ~/.local/share/sf"
+            )
+            return False, notes
         notes.append(f"{label if ok else 'Failed: ' + label.lower()}: {msg or ''}".rstrip())
         if not ok:
             return False, notes
