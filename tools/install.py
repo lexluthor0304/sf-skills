@@ -759,26 +759,62 @@ def install_datacloud_runtime(dry_run: bool = False) -> Tuple[bool, List[str]]:
     for cmd, label, timeout in [
         (["yarn", "install"], "Installed runtime dependencies", 1200),
         (["npx", "tsc"], "Compiled runtime", 1200),
-        (["sf", "plugins", "link", "."], "Linked runtime into sf", 300),
     ]:
         ok, msg = _run_command(cmd, cwd=DATACLOUD_RUNTIME_PLUGIN_DIR, timeout=timeout)
-        if not ok and "EACCES" in msg:
-            plugin_dir = str(DATACLOUD_RUNTIME_PLUGIN_DIR)
-            notes.append(
-                f"Failed: {label.lower()}: Permission denied (EACCES)\n"
-                f"  Your sf CLI was likely installed with sudo/root. Fix with:\n"
-                f"    sudo sf plugins link {plugin_dir}\n"
-                f"  Or fix permissions permanently:\n"
-                f"    sudo chown -R $(whoami) ~/.local/share/sf"
-            )
-            return False, notes
         notes.append(f"{label if ok else 'Failed: ' + label.lower()}: {msg or ''}".rstrip())
         if not ok:
             return False, notes
 
-    ok, msg = _run_command(["sf", "data360", "man"], timeout=30)
-    notes.append(f"{'Verified' if ok else 'Failed to verify'} Data Cloud runtime: {msg or 'sf data360 man'}")
-    return ok, notes
+    # Link the plugin into sf CLI.
+    # When sf was installed globally (sudo/root), sf's data directory may be
+    # root-owned, causing EACCES on `sf plugins link`. We preemptively set
+    # SF_DATA_DIR to a user-writable path so the link always succeeds.
+    sf_data_dir = Path.home() / ".local" / "share" / "sf"
+    sf_data_dir.mkdir(parents=True, exist_ok=True)
+    sf_env = {**os.environ, "SF_DATA_DIR": str(sf_data_dir)}
+
+    try:
+        result = subprocess.run(
+            ["sf", "plugins", "link", "."],
+            cwd=str(DATACLOUD_RUNTIME_PLUGIN_DIR),
+            capture_output=True,
+            text=True,
+            timeout=300,
+            check=False,
+            stdin=subprocess.DEVNULL,
+            env=sf_env,
+        )
+        if result.returncode == 0:
+            notes.append("Linked runtime into sf")
+        else:
+            err = (result.stderr or result.stdout or "").strip().splitlines()[-1] if (result.stderr or result.stdout) else ""
+            notes.append(f"Failed: linked runtime into sf: {err}")
+            return False, notes
+    except subprocess.TimeoutExpired:
+        notes.append("Failed: linked runtime into sf: timed out after 300s")
+        return False, notes
+    except OSError as exc:
+        notes.append(f"Failed: linked runtime into sf: {exc}")
+        return False, notes
+
+    # Verify using the same SF_DATA_DIR so sf can find the linked plugin
+    try:
+        verify = subprocess.run(
+            ["sf", "data360", "man"],
+            capture_output=True, text=True, timeout=30, check=False,
+            stdin=subprocess.DEVNULL, env=sf_env,
+        )
+        if verify.returncode == 0:
+            notes.append("Verified Data Cloud runtime: sf data360 man")
+        else:
+            err = (verify.stderr or verify.stdout or "").strip().splitlines()[-1] if (verify.stderr or verify.stdout) else "sf data360 man"
+            notes.append(f"Failed to verify Data Cloud runtime: {err}")
+            return False, notes
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        notes.append(f"Failed to verify Data Cloud runtime: {exc}")
+        return False, notes
+
+    return True, notes
 
 
 # ============================================================================
