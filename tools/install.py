@@ -1313,11 +1313,27 @@ def is_sf_skills_hook(hook: Dict[str, Any]) -> bool:
     if hook.get("_sf_skills"):
         return True
 
-    # Check command path contains sf-skills indicators (forward + backslash variants)
-    command = hook.get("command", "")
-    if any(indicator in command for indicator in (
+    SF_SKILLS_INDICATORS = (
         "sf-skills", "shared/hooks", ".claude/hooks",
         "shared\\hooks", ".claude\\hooks",
+    )
+
+    # Check command path contains sf-skills indicators (forward + backslash variants)
+    command = hook.get("command", "")
+    if any(indicator in command for indicator in SF_SKILLS_INDICATORS):
+        return True
+
+    # Check prompt field for sf-skills content (type: "prompt" and type: "agent" hooks
+    # use prompt instead of command — without this check, upsert_hooks misclassifies
+    # them as user hooks, causing duplicates on re-install)
+    prompt = hook.get("prompt", "")
+    if prompt and any(keyword in prompt for keyword in (
+        "Salesforce CLI safety guardrail",
+        "sf apex get log",
+        "sf apex tail log",
+        "SOQL_QUERIES",
+        "governor limit",
+        "sfdx",
     )):
         return True
 
@@ -1637,6 +1653,7 @@ def get_hooks_config() -> Dict[str, Any]:
     return {
         "SessionStart": [
             {
+                "_sf_skills": True,
                 "hooks": [{
                     "type": "command",
                     "command": f"{python_cmd} {scripts_path}/session-init.py",
@@ -1646,6 +1663,7 @@ def get_hooks_config() -> Dict[str, Any]:
         ],
         "PreToolUse": [
             {
+                "_sf_skills": True,
                 "matcher": "Bash|mcp__salesforce",
                 "hooks": [
                     {
@@ -1669,6 +1687,7 @@ def get_hooks_config() -> Dict[str, Any]:
                 ],
             },
             {
+                "_sf_skills": True,
                 "matcher": "Bash",
                 "hooks": [
                     {
@@ -1681,6 +1700,7 @@ def get_hooks_config() -> Dict[str, Any]:
         ],
         "PostToolUse": [
             {
+                "_sf_skills": True,
                 "matcher": "Write|Edit",
                 "hooks": [
                     {
@@ -1691,6 +1711,7 @@ def get_hooks_config() -> Dict[str, Any]:
                 ],
             },
             {
+                "_sf_skills": True,
                 "matcher": "Bash",
                 "hooks": [
                     {
