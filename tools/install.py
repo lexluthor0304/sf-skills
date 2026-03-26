@@ -795,6 +795,15 @@ def install_datacloud_runtime(dry_run: bool = False) -> Tuple[bool, List[str]]:
             return False, notes
         notes.append(f"Cloned runtime checkout: {DATACLOUD_RUNTIME_PLUGIN_DIR}")
 
+    # Remove node_modules before yarn install to avoid EACCES errors when
+    # a previous install ran as root and left root-owned files in .bin/.
+    node_modules = DATACLOUD_RUNTIME_PLUGIN_DIR / "node_modules"
+    if node_modules.exists():
+        try:
+            safe_rmtree(node_modules)
+        except Exception:
+            pass  # yarn install will report a clearer error if this matters
+
     manifest_script = SKILLS_DIR / "sf-datacloud" / "scripts" / "generate-manifest.mjs"
     for cmd, label, timeout in [
         (["yarn", "install"], "Installed runtime dependencies", 1200),
