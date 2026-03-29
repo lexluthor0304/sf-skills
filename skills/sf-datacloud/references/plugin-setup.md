@@ -85,6 +85,21 @@ node ~/.claude/skills/sf-datacloud/scripts/generate-manifest.mjs ~/.sf-community
 
 This tells oclif to use pre-compiled output directly instead of attempting auto-transpilation. The `npx oclif manifest` alternative may fail on newer Node.js versions due to `@oclif/core` version mismatches.
 
+### Clone error references `gthoppae/sf-cli-plugin-data360`
+
+If the clone failure mentions `gthoppae/sf-cli-plugin-data360`, your local `~/.claude/sf-skills-install.py` copy is outdated. Refresh the installer first, then retry the optional runtime install:
+
+```bash
+python3 ~/.claude/sf-skills-install.py --force-update
+python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime
+```
+
+Or rerun the latest installer directly from GitHub:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/Jaganpro/sf-skills/main/tools/install.py | python3 - --with-datacloud-runtime
+```
+
 ### Plugin not found after install
 
 If `sf` was installed globally (with `sudo`), the default data directory may be root-owned. Set `SF_DATA_DIR` in your shell profile:

@@ -669,6 +669,41 @@ def update_metadata_fields(**updates: Any) -> None:
     META_FILE.write_text(json.dumps(data, indent=2))
 
 
+def _installer_binary_changed(running_installer_bytes: Optional[bytes]) -> bool:
+    """Return True when INSTALLER_FILE differs from the running installer bytes."""
+    if running_installer_bytes is None or not INSTALLER_FILE.exists():
+        return False
+    try:
+        return running_installer_bytes != INSTALLER_FILE.read_bytes()
+    except (IOError, OSError):
+        return False
+
+
+def _build_finalize_install_args(version: str, commit_sha: Optional[str] = None,
+                                 dry_run: bool = False, force: bool = False,
+                                 called_from_bash: bool = False,
+                                 with_datacloud_runtime: bool = False) -> List[str]:
+    """Build argv for the internal finalize-install handoff."""
+    args = [
+        sys.executable,
+        str(INSTALLER_FILE),
+        "--_finalize-install",
+        "--_version",
+        version,
+    ]
+    if commit_sha:
+        args.extend(["--_commit-sha", commit_sha])
+    if dry_run:
+        args.append("--dry-run")
+    if force:
+        args.append("--force")
+    if called_from_bash:
+        args.append("--called-from-bash")
+    if with_datacloud_runtime:
+        args.append("--with-datacloud-runtime")
+    return args
+
+
 def _command_exists(command: str) -> bool:
     """Return True when a command is available on PATH."""
     return shutil.which(command) is not None
@@ -784,11 +819,20 @@ def install_datacloud_runtime(dry_run: bool = False) -> Tuple[bool, List[str]]:
             timeout=600,
         )
         if not ok:
+            msg_lower = msg.lower() if msg else ""
             if "Authentication failed" in msg or "could not read Username" in msg:
                 notes.append(
                     f"Failed to clone runtime checkout: Authentication failed for {DATACLOUD_RUNTIME_REPO}\n"
                     "  This is a community repo that may require GitHub access.\n"
                     "  The Data Cloud runtime is optional — sf-skills works fine without it."
+                )
+            elif "repository" in msg_lower and "not found" in msg_lower:
+                notes.append(f"Failed to clone runtime checkout: {msg or DATACLOUD_RUNTIME_PLUGIN_DIR}")
+                notes.append(
+                    "If that error references an unexpected GitHub repo, your local "
+                    "installer copy may be outdated. Refresh the installer first "
+                    "(`python3 ~/.claude/sf-skills-install.py --force-update`) or rerun "
+                    "the latest installer from GitHub, then retry `--with-datacloud-runtime`."
                 )
             else:
                 notes.append(f"Failed to clone runtime checkout: {msg or DATACLOUD_RUNTIME_PLUGIN_DIR}")
@@ -2804,6 +2848,7 @@ def cmd_install(dry_run: bool = False, force: bool = False,
 
     install_datacloud_runtime_requested = with_datacloud_runtime
     datacloud_runtime_failure = False
+    installer_updated_on_disk = False
 
     should_offer_datacloud_runtime = (
         state != InstallState.UNIFIED
@@ -2935,6 +2980,7 @@ def cmd_install(dry_run: bool = False, force: bool = False,
             installer_source = source_dir / "tools" / "install.py"
             if installer_source.exists():
                 shutil.copy2(installer_source, INSTALLER_FILE)
+                installer_updated_on_disk = _installer_binary_changed(_running_installer_bytes)
 
             sf_docs_runtime_ok, sf_docs_runtime_notes = install_sf_docs_runtime(source_dir)
             for note in sf_docs_runtime_notes:
@@ -2943,49 +2989,53 @@ def cmd_install(dry_run: bool = False, force: bool = False,
                 print_warning("sf-docs browser runtime setup was incomplete; extraction helpers may need manual setup")
 
             if install_datacloud_runtime_requested:
-                print_substep("Installing optional Data Cloud runtime...")
-                datacloud_runtime_ok, datacloud_runtime_notes = install_datacloud_runtime()
-                for note in datacloud_runtime_notes:
-                    print_substep(note)
-                if not datacloud_runtime_ok:
-                    datacloud_runtime_failure = True
-                    print_warning("Optional Data Cloud runtime setup did not complete successfully")
+                if installer_updated_on_disk:
+                    print_substep(
+                        "Installer updated — deferring optional Data Cloud runtime setup "
+                        "until the new installer restarts..."
+                    )
+                else:
+                    print_substep("Installing optional Data Cloud runtime...")
+                    datacloud_runtime_ok, datacloud_runtime_notes = install_datacloud_runtime()
+                    for note in datacloud_runtime_notes:
+                        print_substep(note)
+                    if not datacloud_runtime_ok:
+                        datacloud_runtime_failure = True
+                        print_warning("Optional Data Cloud runtime setup did not complete successfully")
 
-            # Re-exec detection: if the installer binary changed, hand off to the
-            # new version for Steps 4-5. This solves the bootstrapping problem where
-            # the OLD process's get_hooks_config() references deleted hooks.
-            if _running_installer_bytes is not None and INSTALLER_FILE.exists():
-                try:
-                    _new_installer_bytes = INSTALLER_FILE.read_bytes()
-                    if _running_installer_bytes != _new_installer_bytes:
-                        print_substep("Installer updated — restarting with new version...")
-                        _exec_args = [
-                            sys.executable, str(INSTALLER_FILE),
-                            "--_finalize-install",
-                            "--_version", version,
-                        ]
-                        if commit_sha:
-                            _exec_args.extend(["--_commit-sha", commit_sha])
-                        if dry_run:
-                            _exec_args.append("--dry-run")
-                        if force:
-                            _exec_args.append("--force")
-                        if called_from_bash:
-                            _exec_args.append("--called-from-bash")
-                        if install_datacloud_runtime_requested:
-                            _exec_args.append("--with-datacloud-runtime")
-                        os.execv(sys.executable, _exec_args)
-                        # os.execv replaces the process; unreachable below
-                except (IOError, OSError) as e:
-                    print_warning(f"Re-exec check failed ({e}), continuing with current process")
-
-            # Write metadata (version + commit SHA for update detection)
+            # Write metadata (version + commit SHA for update detection) before any
+            # re-exec handoff so upgraded installs still refresh version tracking.
             write_metadata(version, commit_sha=commit_sha)
 
             # Touch all files for cache refresh
             for d in [SKILLS_DIR, HOOKS_DIR, LSP_DIR]:
                 if d.exists():
                     touch_all_files(d)
+
+            # Re-exec detection: if the installer binary changed, hand off to the
+            # new version for Steps 4-5. This solves the bootstrapping problem where
+            # the OLD process's get_hooks_config() references deleted hooks. When the
+            # optional Data Cloud runtime was requested, defer it to the NEW installer
+            # so stale local installer copies never attempt an outdated runtime repo.
+            if installer_updated_on_disk:
+                print_substep("Installer updated — restarting with new version...")
+                _exec_args = _build_finalize_install_args(
+                    version,
+                    commit_sha=commit_sha,
+                    dry_run=dry_run,
+                    force=force,
+                    called_from_bash=called_from_bash,
+                    with_datacloud_runtime=install_datacloud_runtime_requested,
+                )
+                try:
+                    os.execv(sys.executable, _exec_args)
+                    # os.execv replaces the process; unreachable below
+                except OSError as e:
+                    print_warning(
+                        f"Re-exec failed ({e}); running finalization with the updated installer instead"
+                    )
+                    child = subprocess.run(_exec_args, check=False)
+                    return child.returncode
 
             print_step(3, 5, "Skills, hooks, and LSP engine installed", "done")
             print_substep(f"{skill_count} skills installed")

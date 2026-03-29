@@ -109,6 +109,8 @@ Use this path when you want to:
 > After sf-skills is installed, use the installed copy at `~/.claude/sf-skills-install.py` for normal updates. Use `tools/install.py` only when developing or testing from a cloned repo checkout.
 >
 > **Data Cloud:** the `sf-datacloud-*` family ships with sf-skills, but live Data Cloud execution also needs the optional community `sf data360` runtime. Install it during setup when prompted, or later with `python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime`.
+>
+> **Troubleshooting:** if a Data Cloud runtime clone error mentions `gthoppae/sf-cli-plugin-data360`, your local installer copy is stale. First refresh it with `python3 ~/.claude/sf-skills-install.py --force-update`, then rerun `python3 ~/.claude/sf-skills-install.py --with-datacloud-runtime`.
 
 ```bash
 python3 ~/.claude/sf-skills-install.py --status                  # Check version and install state
