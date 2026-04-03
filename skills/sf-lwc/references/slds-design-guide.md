@@ -4,7 +4,7 @@
 
 **Use blueprints** when building custom HTML/CSS, targeting non-Salesforce platforms, or when no Lightning Base Component exists.
 
-Refer the SLDS blueprints from [references/slds-blueprints.json](references/slds-blueprints.json)
+Refer to the SLDS blueprints in [slds-blueprints.json](slds-blueprints.json)
 
 **Use Lightning Base Components** when working within Salesforce (LWC, Aura, Visualforce) — they handle accessibility, events, and framework integration automatically.
 
