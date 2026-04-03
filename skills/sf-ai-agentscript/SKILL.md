@@ -26,6 +26,8 @@ metadata:
 Agent Script is the **code-first** path for deterministic Agentforce agents. Use this skill when the user is authoring `.agent` files, building finite-state topic flows, or needs repeatable control over routing, variables, actions, and publish behavior.
 
 > Start with the shortest guide first: [references/activation-checklist.md](references/activation-checklist.md)
+>
+> Migrating from the Builder UI? Use [references/migration-guide.md](references/migration-guide.md)
 
 ## When This Skill Owns the Task
 
@@ -256,6 +258,7 @@ See [references/instruction-resolution.md](references/instruction-resolution.md)
 
 ### Examples / templates
 - [references/minimal-examples.md](references/minimal-examples.md)
+- [references/migration-guide.md](references/migration-guide.md)
 - [assets/](assets/)
 - [assets/agents/](assets/agents/)
 - [assets/patterns/](assets/patterns/)
