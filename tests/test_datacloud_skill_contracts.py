@@ -101,14 +101,28 @@ def test_datacloud_skills_reference_shared_readiness_helpers() -> None:
 
 
 def test_datacloud_examples_exist_for_connection_and_search_index_workflows() -> None:
-    expected_files = [
+    expected_json_files = [
         ROOT / "skills/sf-datacloud-connect/examples/connections/heroku-postgres.json",
         ROOT / "skills/sf-datacloud-connect/examples/connections/redshift.json",
+        ROOT / "skills/sf-datacloud-connect/examples/connections/sharepoint-unstructured.json",
+        ROOT / "skills/sf-datacloud-connect/examples/connections/snowflake-connection.json",
+        ROOT / "skills/sf-datacloud-connect/examples/connections/ingest-api-connection.json",
+        ROOT / "skills/sf-datacloud-connect/examples/connections/ingest-api-schema.json",
         ROOT / "skills/sf-datacloud-retrieve/examples/search-indexes/hybrid-structured.json",
         ROOT / "skills/sf-datacloud-retrieve/examples/search-indexes/vector-knowledge.json",
     ]
-    for path in expected_files:
+    for path in expected_json_files:
         assert path.exists(), f"Expected example file to exist: {path.relative_to(ROOT)}"
         content = path.read_text().strip()
         assert content, f"Example file should not be empty: {path.relative_to(ROOT)}"
         json.loads(content)
+
+    expected_text_files = [
+        ROOT / "skills/sf-datacloud-prepare/examples/ingestion-api/.env.example",
+        ROOT / "skills/sf-datacloud-prepare/examples/ingestion-api/README.md",
+        ROOT / "skills/sf-datacloud-prepare/examples/ingestion-api/send-data.py",
+    ]
+    for path in expected_text_files:
+        assert path.exists(), f"Expected example file to exist: {path.relative_to(ROOT)}"
+        content = path.read_text().strip()
+        assert content, f"Example file should not be empty: {path.relative_to(ROOT)}"

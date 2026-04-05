@@ -528,6 +528,10 @@
         "heroku postgres connector",
         "herokupostgres connector",
         "snowflake connector",
+        "sharepoint connector",
+        "sharepoint unstructured",
+        "ingestion api connector",
+        "schema upsert",
         "bigquery connector"
       ],
       "intentPatterns": [
@@ -538,11 +542,15 @@
         "browse.*connection.*objects",
         "browse.*connection.*databases",
         "create.*heroku.*connection",
-        "create.*redshift.*connection"
+        "create.*redshift.*connection",
+        "create.*snowflake.*connection",
+        "create.*sharepoint.*connection",
+        "ingestion.*api.*connector",
+        "schema.*upsert"
       ],
       "priority": "medium",
       "description": "Data Cloud connections, connectors, and source discovery",
-      "triggerWhen": "user manages Data Cloud connections, connectors, source metadata, or tests a connection",
+      "triggerWhen": "user manages Data Cloud connections, connectors, source metadata, uploaded connector schemas, or tests a connection",
       "doNotTriggerWhen": "the task is about data streams, DLOs, DMOs, SQL/search, or STDM/session tracing"
     },
     "sf-datacloud-prepare": {
@@ -551,10 +559,15 @@
         "create-from-object",
         "data lake object",
         "dlo",
+        "udlo",
+        "unstructured dlo",
         "data transform",
         "document ai",
         "docai",
-        "data cloud ingestion"
+        "data cloud ingestion",
+        "data-stream run",
+        "run-existing",
+        "ingestion api"
       ],
       "intentPatterns": [
         "create.*data.*stream",
@@ -562,11 +575,17 @@
         "ingest.*into.*data.*cloud",
         "create.*transform",
         "run.*transform",
-        "generate.*docai"
+        "generate.*docai",
+        "run.*data.*stream",
+        "rerun.*data.*stream",
+        "refresh.*data.*stream",
+        "create.*udlo",
+        "unstructured.*dlo",
+        "send.*data.*cloud.*ingestion.*api"
       ],
       "priority": "medium",
-      "description": "Data Cloud ingestion, streams, DLOs, transforms, and Document AI",
-      "triggerWhen": "user creates or manages Data Cloud streams, DLOs, transforms, or DocAI workflows",
+      "description": "Data Cloud ingestion, streams, DLOs, transforms, Document AI, and unstructured refresh workflows",
+      "triggerWhen": "user creates or manages Data Cloud streams, DLOs, transforms, DocAI workflows, unstructured rescans, or Ingestion API send-data flows after connector setup",
       "doNotTriggerWhen": "the task is connector-only setup, harmonization, or pure query/search work"
     },
     "sf-datacloud-harmonize": {
