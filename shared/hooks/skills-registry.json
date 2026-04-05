@@ -457,6 +457,40 @@
       "triggerWhen": "user creates test data, performs bulk import/export, uses sf data CLI commands, or needs data factory patterns for Apex tests",
       "doNotTriggerWhen": "SOQL query writing only (use sf-soql), Apex test execution (use sf-testing), or metadata deployment (use sf-deploy)"
     },
+    "sf-flex-estimator": {
+      "keywords": [
+        "flex credit",
+        "flex credits",
+        "agentforce cost",
+        "agentforce pricing",
+        "data cloud pricing",
+        "data cloud cost",
+        "cost estimate",
+        "cost estimation",
+        "pricing estimate",
+        "pricing scenario",
+        "private connect",
+        "tiered pricing",
+        "tier multiplier",
+        "rate card"
+      ],
+      "intentPatterns": [
+        "estimate.*flex.*credit",
+        "estimate.*agentforce.*cost",
+        "estimate.*data.*cloud.*cost",
+        "calculate.*flex.*credit",
+        "calculate.*agentforce.*pricing",
+        "price.*agent",
+        "model.*usage.*scenario",
+        "compare.*pricing.*scenario",
+        "forecast.*flex.*credit",
+        "optimize.*flex.*credit"
+      ],
+      "priority": "medium",
+      "description": "Public list-price Flex Credit estimation for Agentforce and Data Cloud workloads",
+      "triggerWhen": "user needs cost projections, scenario planning, budget sizing, or architecture tradeoff analysis for Agentforce prompts/actions, Data Cloud meters, or monthly Flex Credit usage",
+      "doNotTriggerWhen": "the user is implementing Builder metadata or .agent files, provisioning live Data Cloud assets, or asking for exact contract-specific commercial pricing"
+    },
     "sf-datacloud": {
       "keywords": [
         "data cloud pipeline",

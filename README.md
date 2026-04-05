@@ -4,13 +4,13 @@
 
 [![Author](https://img.shields.io/badge/Author-Jag_Valaiyapathy-blue?logo=github)](https://github.com/Jaganpro)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Skills](https://img.shields.io/badge/Skills-35-4F46E5)](#available-skills)
+[![Skills](https://img.shields.io/badge/Skills-36-4F46E5)](#available-skills)
 [![Claude Code Agents](https://img.shields.io/badge/Claude_Code_Agents-7-059669)](#agent-team)
 [![Standard](https://img.shields.io/badge/Agent_Skills-Compatible-0F766E)](https://agentskills.io)
 
-A reusable skill library for **Salesforce-focused coding agents**—covering Apex, Flow, LWC, SOQL, metadata, Data Cloud, integration, testing, deployment, and Agentforce workflows.
+A reusable skill library for **Salesforce-focused coding agents**—covering Apex, Flow, LWC, SOQL, metadata, Data Cloud, integration, testing, deployment, Agentforce workflows, and Flex Credit estimation.
 
-**Included:** 35 Salesforce skills, 7 specialist Claude Code agents, a shared hook system for guardrails and auto-validation, and LSP-backed feedback for Apex, LWC, and Agent Script.
+**Included:** 36 Salesforce skills, 7 specialist Claude Code agents, a shared hook system for guardrails and auto-validation, and LSP-backed feedback for Apex, LWC, and Agent Script.
 
 > Recommended workflow for this repository: agent-first development in Claude Code, Pi, and similar coding agents. VS Code is optional tooling, not the primary operating model.
 >
@@ -32,6 +32,7 @@ The library is organized by capability area so you can scan quickly, pick the ri
 | 🧪 **Quality** | [sf-testing](skills/sf-testing/), [sf-debug](skills/sf-debug/) | Test execution, coverage analysis, and debug-log troubleshooting |
 | 📦 **Foundation** | [sf-metadata](skills/sf-metadata/), [sf-data](skills/sf-data/), [sf-docs](skills/sf-docs/), [sf-permissions](skills/sf-permissions/) | Metadata generation, data operations, access analysis, and official Salesforce docs retrieval |
 | 🔌 **Integration** | [sf-connected-apps](skills/sf-connected-apps/), [sf-integration](skills/sf-integration/) | OAuth, External Client Apps, Named Credentials, callouts, and events |
+| 💰 **Planning & Estimation** | [sf-flex-estimator](skills/sf-flex-estimator/) | Public list-price Flex Credit estimation, scenario planning, and cost optimization for Agentforce and Data Cloud |
 | ☁️ **Data Cloud** | [sf-datacloud](skills/sf-datacloud/), [sf-datacloud-connect](skills/sf-datacloud-connect/), [sf-datacloud-prepare](skills/sf-datacloud-prepare/), [sf-datacloud-harmonize](skills/sf-datacloud-harmonize/), [sf-datacloud-segment](skills/sf-datacloud-segment/), [sf-datacloud-act](skills/sf-datacloud-act/), [sf-datacloud-retrieve](skills/sf-datacloud-retrieve/) | Data Cloud connections, ingestion, harmonization, segmentation, activation, and retrieval.<br><sub>Beta / Community Preview · live execution uses the external community <code>sf data360</code> runtime</sub> |
 | 🤖 **AI & Automation** | [sf-ai-agentscript](skills/sf-ai-agentscript/), [sf-ai-agentforce](skills/sf-ai-agentforce/), [sf-ai-agentforce-testing](skills/sf-ai-agentforce-testing/), [sf-ai-agentforce-observability](skills/sf-ai-agentforce-observability/), [sf-ai-agentforce-persona](skills/sf-ai-agentforce-persona/) | Agent design, Agent Script, testing, observability, and persona design |
 | 🚀 **DevOps & Tooling** | [sf-deploy](skills/sf-deploy/), [sf-vlocity-build-deploy](skills/sf-vlocity-build-deploy/), [sf-diagram-mermaid](skills/sf-diagram-mermaid/), [sf-diagram-nanobananapro](skills/sf-diagram-nanobananapro/) | Salesforce + Vlocity DataPack deployment automation, Mermaid diagrams, and visual artifacts |
@@ -77,7 +78,7 @@ npx skills add Jaganpro/sf-skills --list
 curl -sSL https://raw.githubusercontent.com/Jaganpro/sf-skills/main/tools/install.sh | bash
 ```
 
-This installs 35 skills, 7 specialist agents, a shared hook system, and the local LSP engine. It also configures LLM-powered guardrails (Haiku prompt hook), SOQL schema validation, Prettier auto-formatting, Code Analyzer (PMD/ESLint), and debug log analysis (Haiku agent hook).
+This installs 36 skills, 7 specialist agents, a shared hook system, and the local LSP engine. It also configures LLM-powered guardrails (Haiku prompt hook), SOQL schema validation, Prettier auto-formatting, Code Analyzer (PMD/ESLint), and debug log analysis (Haiku agent hook).
 
 > **Data Cloud note:** the installer brings in the `sf-datacloud-*` skills, but the external community `sf data360` CLI runtime is still a separate prerequisite. On first-time install the installer can prompt for it, or you can request it explicitly with `--with-datacloud-runtime`.
 
@@ -144,7 +145,7 @@ python3 ~/.claude/sf-skills-install.py --profile delete old
 
 ```
 ~/.claude/
-├── skills/                    # 35 Salesforce skills
+├── skills/                    # 36 Salesforce skills
 │   ├── sf-apex/SKILL.md
 │   ├── sf-flow/SKILL.md
 │   └── ... (33 more)
@@ -515,6 +516,15 @@ This is the working mental model for the ecosystem: foundation and integration s
 "Generate a PromptTemplate for case summaries"
 ```
 
+### 💰 Flex Credit Estimation
+```
+"Estimate Flex Credits for an Agentforce agent with 3 standard prompts and 5 actions"
+"Compare low, medium, and enterprise monthly costs for this Agentforce + Data Cloud design"
+"How much does Private Connect add to this Data Cloud estimate?"
+"Show me the biggest cost drivers in this proposed agent architecture"
+"Generate a public list-price Flex Credit estimate for this rollout"
+```
+
 ### ☁️ Data Cloud
 ```
 "Set up a Data Cloud pipeline from CRM ingestion to unified profiles"
@@ -602,6 +612,11 @@ sf-industry-commoncore-{name}  # Industries Common Core (omnistudio)
 | 🔒 | `sf-security` | Sharing rules, org-wide defaults, encryption | 📋 Planned |
 | 📦 | `sf-migration` | Org-to-org, metadata comparison | 📋 Planned |
 
+### 💰 Planning & Estimation
+| | Skill | Description | Status |
+|--|-------|-------------|--------|
+| 💰 | `sf-flex-estimator` | Public list-price Flex Credit estimation, scenario planning, and cost optimization for Agentforce and Data Cloud | ✅ Live |
+
 ### 🤖 AI & Automation
 | | Skill | Description | Status |
 |--|-------|-------------|--------|
@@ -649,7 +664,7 @@ sf-industry-commoncore-{name}  # Industries Common Core (omnistudio)
 | 🏦 | `sf-industry-finserv` | KYC, AML, Wealth Management | 📋 Planned |
 | 💵 | `sf-industry-revenue` | CPQ, Billing, Revenue Lifecycle | 📋 Planned |
 
-**Current repo state:** 35 live skills today, with additional cloud, security, AI, and industry roadmap items still planned.
+**Current repo state:** 36 live skills today, with additional cloud, security, AI, and industry roadmap items still planned.
 
 </details>
 
