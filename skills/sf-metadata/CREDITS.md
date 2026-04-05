@@ -30,7 +30,7 @@ Key contributions:
 - Security model architecture
 - Multi-tenant schema considerations
 
-### August Krys
+### [August Krys](https://github.com/not2technical)
 
 Key contributions:
 - corrections that strengthened automatic Permission Set / FLS follow-up for new custom metadata

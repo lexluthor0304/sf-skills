@@ -31,7 +31,7 @@ Key contributions:
 - Bulk API usage patterns
 - Data loader best practices
 
-### August Krys
+### [August Krys](https://github.com/not2technical)
 
 Key contributions:
 - describe-first test-data workflow corrections

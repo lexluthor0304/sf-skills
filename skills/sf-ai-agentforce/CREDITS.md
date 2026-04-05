@@ -6,7 +6,7 @@ Created by [Jag Valaiyapathy](https://github.com/Jaganpro)
 
 ## Authors & Contributors
 
-### August Krys
+### [August Krys](https://github.com/not2technical)
 
 Key contributions:
 - corrections that drove the shift from legacy PromptTemplate guidance to current `GenAiPromptTemplate` guidance

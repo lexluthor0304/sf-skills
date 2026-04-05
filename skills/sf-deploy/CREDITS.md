@@ -51,7 +51,7 @@ Key contributions:
 - Metadata API expertise
 - Salesforce DX foundations
 
-### August Krys
+### [August Krys](https://github.com/not2technical)
 
 Key contributions:
 - deployment workflow corrections discovered through hands-on build experience
