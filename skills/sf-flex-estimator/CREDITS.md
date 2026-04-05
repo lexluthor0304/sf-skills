@@ -1,6 +1,19 @@
 # Credits and Sources
 
-`sf-flex-estimator` is derived from public product and pricing materials and adapted to the sf-skills repository format.
+## Primary contributor
+
+### [August Krys](https://github.com/not2technical)
+
+This skill is credited primarily to August Krys.
+
+Related repo:
+- [not2technical/sf-skills](https://github.com/not2technical/sf-skills)
+
+Primary contribution areas reflected in this skill:
+- Flex Credit estimation workflow design
+- Agentforce and Data Cloud cost-model framing
+- scenario-based estimation structure
+- pricing-oriented documentation and planning guidance
 
 ## Public sources used for this skill
 
@@ -11,7 +24,7 @@
 
 ## Repository adaptation
 
-This skill was normalized for sf-skills by:
+This skill was normalized for this repository by:
 - converting the skill entry point to repository-style `SKILL.md` frontmatter
 - aligning templates, calculator inputs, and validation expectations
 - updating tiering and Data Cloud meter references to a consistent public model

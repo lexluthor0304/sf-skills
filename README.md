@@ -682,7 +682,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 | Contributor | Area | Skills |
 |---|---|---|
-| [August Krys](https://github.com/not2technical) | Agentforce metadata modernization, metadata/FLS improvements, data/deploy workflow updates | sf-ai-agentforce, sf-ai-agentscript, sf-metadata, sf-data, sf-deploy |
+| [August Krys](https://github.com/not2technical) | Agentforce metadata modernization, metadata/FLS improvements, data/deploy workflow updates, and primary contribution for Flex Credit estimation ([repo](https://github.com/not2technical/sf-skills)) | sf-ai-agentforce, sf-ai-agentscript, sf-metadata, sf-data, sf-deploy, sf-flex-estimator |
 | [Gnanasekaran Thoppae](https://github.com/gthoppae) | Data Cloud product family | sf-datacloud, sf-datacloud-connect, sf-datacloud-prepare, sf-datacloud-harmonize, sf-datacloud-segment, sf-datacloud-act, sf-datacloud-retrieve |
 | [David Ryan (weytani)](https://github.com/weytani) | Industries Common Core | sf-industry-commoncore-omnistudio-analyze, sf-industry-commoncore-datamapper, sf-industry-commoncore-integration-procedure, sf-industry-commoncore-omniscript, sf-industry-commoncore-flexcard |
 | [Shreyas Dhond, CTA (ShreyasD)](https://github.com/ShreyasD) | Primary contributor — Industries Common Core callable Apex | sf-industry-commoncore-callable-apex |

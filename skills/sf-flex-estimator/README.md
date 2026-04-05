@@ -93,6 +93,13 @@ python3 hooks/scripts/validate_estimate.py \
 
 `hooks/scripts/validate_estimate.py` is a **manual validation helper**. It is not connected to the shared repo-wide auto-validation dispatcher because generic estimate files do not map cleanly to a single file extension or path convention.
 
+## Credit
+
+Primary contributor: [August Krys](https://github.com/not2technical)
+
+Related repo:
+- [not2technical/sf-skills](https://github.com/not2technical/sf-skills)
+
 ## License
 
 MIT — see [LICENSE](LICENSE)

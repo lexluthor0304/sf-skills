@@ -12,7 +12,7 @@ description: >
 license: MIT
 metadata:
   version: "1.1.0"
-  author: "Community contribution"
+  author: "August Krys"
   scoring: "130 points across 7 categories"
 ---
 
