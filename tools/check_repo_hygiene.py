@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Repository hygiene checks for sf-skills.
 
-Checks tracked Markdown files for:
+Checks tracked repository content for:
 - broken local Markdown links / anchors
 - forbidden placeholder patterns
 - stale install instructions / legacy path references
+- runnable Jest/Pytest-style test assets accidentally committed under skills/
 
 By default, excludes docs/ because whitepaper/export content is managed separately.
 """
@@ -140,6 +141,39 @@ def check_local_links(files: list[str], anchors: dict[str, set[str]]) -> list[st
     return issues
 
 
+def check_skill_test_assets() -> list[str]:
+    """Reject runnable test files committed under skills/.
+
+    Skills may include test templates, but they must be shipped as inert examples
+    (for example, `*.test.js.example`) so external Jest/Pytest discovery does not
+    accidentally execute them after installation.
+    """
+    issues: list[str] = []
+    runnable_suffixes = (
+        ".test.js",
+        ".test.jsx",
+        ".test.ts",
+        ".test.tsx",
+        ".spec.js",
+        ".spec.jsx",
+        ".spec.ts",
+        ".spec.tsx",
+        "_test.py",
+        "_spec.py",
+    )
+
+    for path in (ROOT / "skills").rglob("*"):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(ROOT).as_posix()
+        if "/__tests__/" in rel or rel.endswith(runnable_suffixes):
+            issues.append(
+                f"RUNNABLE_TEST_ASSET\t{rel}\tUse an inert example name such as *.example outside __tests__/"
+            )
+
+    return issues
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run sf-skills repository hygiene checks")
     parser.add_argument(
@@ -155,6 +189,7 @@ def main() -> int:
     issues = []
     issues.extend(check_forbidden_patterns(files))
     issues.extend(check_local_links(files, anchors))
+    issues.extend(check_skill_test_assets())
 
     if issues:
         print(f"Found {len(issues)} hygiene issue(s):")
@@ -162,7 +197,7 @@ def main() -> int:
             print(issue)
         return 1
 
-    print(f"Hygiene checks passed for {len(files)} Markdown files")
+    print(f"Hygiene checks passed for {len(files)} Markdown files and skill asset naming")
     return 0
 
 
